@@ -1,0 +1,16 @@
+# Données réelles de l'équipe — ne JAMAIS publier sur un dépôt public.
+# Les sauvegardes exportées contiennent noms, téléphones, e-mails et
+# sujets de prière : elles restent sur votre poste.
+*.xlsx
+*.xls
+*.csv
+teams-mbock-*.json
+membres-teams-mbock-*.csv
+
+# Version générée pour la publication en artifact
+teams-mbock-artifact.html
+
+# Système
+Thumbs.db
+desktop.ini
+.DS_Store

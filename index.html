@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TEAMS MBOCK — Tableau de bord des membres</title>
+<style>
+/* ---------- Tokens ---------- */
+:root {
+  color-scheme: light;
+  --plane:          #f9f9f7;
+  --surface:        #fcfcfb;
+  --surface-2:      #f3f3ef;
+  --ink:            #0b0b0b;
+  --ink-2:          #52514e;
+  --muted:          #898781;
+  --grid:           #e1e0d9;
+  --axis:           #c3c2b7;
+  --border:         rgba(11,11,11,0.10);
+  --shadow:         0 1px 2px rgba(11,11,11,.05), 0 8px 24px rgba(11,11,11,.06);
+
+  --brand:          #2a78d6;
+  --brand-soft:     #cde2fb;
+  --brand-mid:      #86b6ef;
+  --seq-700:        #0d366b;
+
+  --good:           #0ca30c;
+  --warning:        #fab219;
+  --serious:        #ec835a;
+  --critical:       #d03b3b;
+  --good-text:      #006300;
+
+  --radius:         14px;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --plane:      #0d0d0d;
+    --surface:    #1a1a19;
+    --surface-2:  #232322;
+    --ink:        #ffffff;
+    --ink-2:      #c3c2b7;
+    --muted:      #898781;
+    --grid:       #2c2c2a;
+    --axis:       #383835;
+    --border:     rgba(255,255,255,0.10);
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --brand:      #3987e5;
+    --brand-soft: #184f95;
+    --brand-mid:  #256abf;
+    --seq-700:    #cde2fb;
+    --good-text:  #0ca30c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane:      #0d0d0d;
+  --surface:    #1a1a19;
+  --surface-2:  #232322;
+  --ink:        #ffffff;
+  --ink-2:      #c3c2b7;
+  --muted:      #898781;
+  --grid:       #2c2c2a;
+  --axis:       #383835;
+  --border:     rgba(255,255,255,0.10);
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --brand:      #3987e5;
+  --brand-soft: #184f95;
+  --brand-mid:  #256abf;
+  --seq-700:    #cde2fb;
+  --good-text:  #0ca30c;
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body {
+  font-family: var(--font);
+  background: var(--plane);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3 { margin:0; font-weight:600; letter-spacing:-.01em; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px 72px; }
+
+/* ---------- Header ---------- */
+header.top {
+  position: sticky; top:0; z-index: 40;
+  background: color-mix(in srgb, var(--plane) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.top-inner {
+  max-width:1280px; margin:0 auto; padding:14px 20px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.brandmark { display:flex; align-items:center; gap:11px; margin-right:auto; }
+.logo {
+  width:36px; height:36px; border-radius:10px; flex:none;
+  background: linear-gradient(140deg, var(--brand), var(--seq-700));
+  display:grid; place-items:center; color:#fff; font-weight:700; font-size:15px;
+}
+.brandmark h1 { font-size:17px; }
+.brandmark p { margin:0; font-size:12.5px; color:var(--muted); }
+
+.who {
+  display:flex; align-items:center; gap:9px;
+  background: var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:4px 5px 4px 6px; box-shadow: var(--shadow);
+}
+.who-av {
+  width:26px; height:26px; border-radius:50%; flex:none; display:grid; place-items:center;
+  background: var(--brand-soft); color: var(--seq-700); font-weight:650; font-size:11px;
+}
+.who-name { font-size:13.5px; font-weight:550; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ---------- Rôles ---------- */
+.pill {
+  display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:650;
+  letter-spacing:.02em; padding:2px 8px; border-radius:999px; white-space:nowrap;
+  background: var(--brand-soft); color: var(--seq-700);
+}
+.pill[hidden] { display:none; }
+.pill.super { background: var(--brand); color:#fff; }
+
+.denied {
+  display:flex; gap:10px; align-items:flex-start; margin:0;
+  padding:13px 15px; border-radius:12px; background: var(--surface-2);
+  border:1px solid var(--border); font-size:12.5px; color: var(--ink-2); line-height:1.5;
+}
+.denied[hidden] { display:none; }
+.denied svg { flex:none; margin-top:1px; color: var(--muted); }
+.denied b { color: var(--ink); }
+
+#adminPanel[hidden] { display:none; }
+.adm-row {
+  display:flex; align-items:center; gap:10px; padding:9px 2px;
+  border-top:1px solid var(--grid); font-size:13.5px;
+}
+.adm-row:first-child { border-top:0; }
+.adm-name { font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.adm-row .btn { margin-left:auto; }
+.adm-empty { padding:14px 2px; font-size:12.5px; color:var(--muted); }
+.adm-you { font-size:12px; color:var(--muted); margin-left:auto; }
+.adm-add { display:flex; gap:8px; margin-top:12px; }
+.adm-add input {
+  flex:1; min-width:0; border:1px solid var(--border); background: var(--plane);
+  border-radius:10px; padding:9px 11px; font-size:13.5px;
+}
+.adm-add input:disabled, .adm-add button:disabled { opacity:.45; cursor:not-allowed; }
+#admFull[hidden] { display:none; }
+
+/* ---------- Portail d'accès ---------- */
+body.locked header.top, body.locked .wrap { display:none; }
+body:not(.locked) .lock { display:none; }
+.lock {
+  position:fixed; inset:0; z-index:300; background: var(--plane);
+  display:grid; place-items:center; padding:24px; overflow-y:auto;
+}
+.lock-card {
+  width:min(430px, 100%); background: var(--surface); border:1px solid var(--border);
+  border-radius:20px; box-shadow: var(--shadow); padding:28px 28px 22px;
+}
+.lock-brand { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+.lock-brand h1 { font-size:19px; letter-spacing:-.02em; }
+.lock-brand p { margin:0; font-size:12.5px; color:var(--muted); }
+
+.tabs { display:flex; gap:4px; background: var(--surface-2); border-radius:999px; padding:4px; margin-bottom:20px; }
+.tab {
+  flex:1; border:0; background:transparent; padding:8px 10px; border-radius:999px;
+  font-size:13px; font-weight:550; color: var(--ink-2); cursor:pointer;
+}
+.tab.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(11,11,11,.08); }
+
+.lock-form { display:grid; gap:13px; }
+/* display:grid l'emporterait sur le [hidden] du navigateur */
+.lock-form[hidden], .lock-note[hidden], .lock-none[hidden] { display:none; }
+.lock-go { width:100%; justify-content:center; padding:11px; margin-top:3px; }
+.lock-go[disabled] { opacity:.5; cursor:progress; }
+.lock-none { font-size:12.5px; color:var(--muted); margin:0; text-align:center; }
+
+.rules { list-style:none; margin:2px 0 0; padding:0; display:grid; gap:6px; }
+.rules li { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); }
+.rules li i {
+  width:14px; height:14px; border-radius:50%; flex:none; border:1.5px solid var(--axis);
+  position:relative; transition: background .12s ease, border-color .12s ease;
+}
+.rules li.ok { color: var(--ink-2); }
+.rules li.ok i { background: var(--good); border-color: var(--good); }
+.rules li.ok i::after {
+  content:""; position:absolute; left:4px; top:1px; width:3px; height:7px;
+  border:solid #fff; border-width:0 1.7px 1.7px 0; transform: rotate(43deg);
+}
+.rules code { background: var(--surface-2); padding:1px 5px; border-radius:5px; font-size:11.5px; }
+
+.su-super { font-size:12px; color: var(--good-text); font-weight:550; }
+.su-super[hidden] { display:none; }
+
+.lock-note {
+  margin:20px 0 0; padding-top:16px; border-top:1px solid var(--grid);
+  font-size:11.5px; line-height:1.5; color:var(--muted);
+}
+.lock-note b { color: var(--ink-2); }
+
+.warnbar {
+  position:sticky; top:0; z-index:400;
+  background: var(--warning); color:#1a1a19;
+  font-size:12.5px; font-weight:500; text-align:center;
+  padding:8px 16px; line-height:1.45;
+}
+.warnbar b { font-weight:700; }
+
+.btn {
+  border:1px solid var(--border); background: var(--surface); color: var(--ink);
+  padding:8px 14px; border-radius:999px; cursor:pointer; font-size:13.5px; font-weight:500;
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  transition: background .12s ease, border-color .12s ease, transform .08s ease;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color:#fff; }
+.btn.primary:hover { background: color-mix(in srgb, var(--brand) 85%, #000); }
+.btn.ghost { background: transparent; }
+.btn.icon { padding:8px 10px; }
+.btn.sm { padding:5px 11px; font-size:12.5px; }
+
+/* ---------- KPI ---------- */
+.kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin:24px 0 20px; }
+.kpi {
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  padding:16px 18px; box-shadow: var(--shadow);
+}
+.kpi .k-label { font-size:12.5px; color:var(--muted); font-weight:500; }
+.kpi .k-value { font-size:34px; font-weight:650; letter-spacing:-.03em; line-height:1.15; margin-top:2px; }
+.kpi .k-sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
+.kpi .k-sub strong { color: var(--good-text); font-weight:600; }
+
+/* ---------- Panels ---------- */
+.panel {
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding:18px 20px 20px;
+}
+.panel-head { display:flex; align-items:baseline; gap:12px; margin-bottom:4px; flex-wrap:wrap; }
+.panel-head h2 { font-size:15.5px; }
+.panel-head .hint { font-size:12.5px; color:var(--muted); margin-left:auto; }
+.panel-sub { font-size:12.5px; color:var(--muted); margin:0 0 16px; }
+
+.grid-2 { display:grid; grid-template-columns: 1.05fr .95fr; gap:14px; align-items:start; }
+
+/* ---------- Legend ---------- */
+.legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2); }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.swatch { width:11px; height:11px; border-radius:3px; flex:none; }
+
+/* ---------- Barre empilée des statuts ---------- */
+.stack { display:flex; gap:2px; height:26px; margin:2px 0 12px; }
+.stack .seg {
+  height:26px; border-radius:3px; cursor:pointer; position:relative;
+  display:grid; place-items:center; min-width:3px;
+  transition: filter .12s ease;
+}
+.stack .seg:first-child { border-radius:4px 3px 3px 4px; }
+.stack .seg:last-child  { border-radius:3px 4px 4px 3px; }
+.stack .seg:hover { filter: brightness(1.08); }
+.stack .seg b { color:#fff; font-size:12px; font-weight:650; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+.legend button {
+  display:inline-flex; align-items:center; gap:6px; background:none; border:0; padding:2px 4px;
+  border-radius:6px; cursor:pointer; font-size:12.5px; color:var(--ink-2);
+}
+.legend button:hover { background: var(--surface-2); color: var(--ink); }
+.legend button.on { color: var(--ink); font-weight:600; }
+.legend b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* mini-barre de statuts dans l'en-tête de ville */
+.mini-stack { display:flex; gap:1px; width:88px; height:6px; flex:none; }
+.mini-stack i { height:6px; border-radius:2px; }
+
+/* ---------- Bar chart ---------- */
+.bars { display:flex; flex-direction:column; gap:2px; }
+.bar-row {
+  display:grid; grid-template-columns: 108px 1fr 64px; align-items:center; gap:10px;
+  padding:3px 6px; border-radius:8px; cursor:pointer;
+}
+.bar-row:hover { background: var(--surface-2); }
+.bar-row.on { background: var(--surface-2); }
+.bar-label { font-size:12.5px; color:var(--ink-2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bar-track { position:relative; height:15px; }
+.bar-seg { position:absolute; top:0; height:15px; }
+.bar-seg.filled { left:0; background: var(--brand); border-radius:0 4px 4px 0; }
+.bar-val { font-size:12.5px; color:var(--ink-2); font-variant-numeric: tabular-nums; }
+.bar-val b { color: var(--ink); font-weight:600; }
+
+/* ---------- Map ---------- */
+.map-holder { position:relative; }
+#mapSvg { width:100%; height:auto; display:block; }
+.fr-outline { fill: var(--surface-2); stroke: var(--axis); stroke-width:1; stroke-linejoin:round; }
+.bubble { fill: var(--brand); fill-opacity:.55; stroke: var(--surface); stroke-width:2; cursor:pointer; transition: fill-opacity .12s ease; }
+.bubble:hover, .bubble.on { fill-opacity:.9; }
+.bubble-label { font-size:8px; fill: var(--ink-2); pointer-events:none; font-family: var(--font); }
+
+/* ---------- Tooltip ---------- */
+#tip {
+  position:fixed; z-index:200; pointer-events:none; opacity:0; transform: translateY(-4px);
+  transition: opacity .1s ease;
+  background: var(--surface); border:1px solid var(--border); border-radius:10px;
+  box-shadow: var(--shadow); padding:9px 12px; font-size:12.5px; max-width:230px;
+}
+#tip.show { opacity:1; }
+#tip .t-title { font-weight:600; margin-bottom:3px; }
+#tip .t-line { color: var(--ink-2); display:flex; justify-content:space-between; gap:14px; }
+#tip .t-line b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ---------- Filters ---------- */
+.filters {
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  margin:26px 0 16px;
+}
+.field {
+  display:flex; align-items:center; gap:8px;
+  background: var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:7px 14px; box-shadow: var(--shadow);
+}
+.field svg { flex:none; color: var(--muted); }
+.field input, .field select { border:0; background:transparent; padding:1px 2px; min-width:120px; font-size:13.5px; }
+.field input { min-width:190px; }
+.filters .count { font-size:12.5px; color:var(--muted); margin-left:auto; }
+
+/* ---------- City groups ---------- */
+.city { border:1px solid var(--border); background: var(--surface); border-radius: var(--radius); margin-bottom:10px; box-shadow: var(--shadow); overflow:hidden; }
+.city-head {
+  display:flex; align-items:center; gap:12px; width:100%;
+  padding:13px 18px; background:transparent; border:0; cursor:pointer; text-align:left;
+}
+.city-head:hover { background: var(--surface-2); }
+.chev { flex:none; color: var(--muted); transition: transform .15s ease; }
+.city.open .chev { transform: rotate(90deg); }
+.city-name { font-weight:600; font-size:14.5px; }
+.city-meta { font-size:12.5px; color:var(--muted); margin-left:auto; display:flex; align-items:center; gap:14px; }
+.city-body { display:none; padding:2px 12px 12px; }
+.city.open .city-body { display:block; }
+
+.member {
+  display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:10px; cursor:pointer;
+  border-top:1px solid var(--grid);
+}
+.member:hover { background: var(--surface-2); }
+.avatar {
+  width:32px; height:32px; border-radius:50%; flex:none; display:grid; place-items:center;
+  background: var(--brand-soft); color: var(--seq-700); font-weight:650; font-size:12px;
+}
+.m-main { min-width:0; }
+.m-name { font-weight:550; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.m-sub { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.m-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+
+.badge {
+  display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:550;
+  padding:3px 9px 3px 7px; border-radius:999px; background: var(--surface-2); color: var(--ink-2);
+  border:1px solid var(--border); white-space:nowrap;
+}
+.dot { width:7px; height:7px; border-radius:50%; flex:none; }
+.badge.nouveau .dot { background: var(--brand); }
+.badge.integration .dot { background: var(--warning); }
+.badge.membre .dot { background: var(--good); }
+.badge.suivi .dot { background: var(--serious); }
+
+.chip-c { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); font-variant-numeric: tabular-nums; }
+
+.empty { padding:36px 20px; text-align:center; color:var(--muted); font-size:13.5px; }
+
+/* ---------- Drawer ---------- */
+.scrim { position:fixed; inset:0; background: rgba(11,11,11,.42); opacity:0; pointer-events:none; transition: opacity .18s ease; z-index:90; }
+.scrim.show { opacity:1; pointer-events:auto; }
+.drawer {
+  position:fixed; top:0; right:0; height:100%; width:min(440px, 100%);
+  background: var(--surface); border-left:1px solid var(--border); z-index:100;
+  transform: translateX(102%); transition: transform .22s cubic-bezier(.32,.72,0,1);
+  display:flex; flex-direction:column;
+}
+.drawer.show { transform: none; }
+.drawer-head { padding:18px 20px 14px; border-bottom:1px solid var(--grid); display:flex; gap:12px; align-items:flex-start; }
+.drawer-body { overflow-y:auto; padding:16px 20px; flex:1; }
+.drawer-foot { border-top:1px solid var(--grid); padding:12px 16px; display:flex; gap:8px; align-items:flex-end; }
+.drawer-foot textarea {
+  flex:1; resize:none; border:1px solid var(--border); background: var(--plane);
+  border-radius:12px; padding:9px 12px; font-size:13.5px; min-height:42px; max-height:130px;
+}
+.d-title { font-size:18px; font-weight:650; letter-spacing:-.02em; }
+.d-sub { font-size:12.5px; color:var(--muted); }
+
+.meta-list { list-style:none; margin:0 0 20px; padding:0; display:grid; gap:1px; background: var(--grid); border:1px solid var(--grid); border-radius:12px; overflow:hidden; }
+.meta-list li { display:flex; gap:12px; padding:9px 13px; background: var(--surface); font-size:13px; }
+.meta-list .k { color:var(--muted); width:104px; flex:none; }
+.meta-list .v { color:var(--ink); word-break:break-word; }
+
+.c-head { font-size:12.5px; color:var(--muted); font-weight:550; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+
+/* ---------- Sujets de prière ---------- */
+.pray {
+  display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:7px;
+  background: var(--surface-2); border:1px solid var(--border); border-radius:11px;
+  border-left:3px solid var(--brand);
+}
+.pray.done { border-left-color: var(--good); }
+.pray.done .pray-text { color: var(--muted); text-decoration: line-through; }
+.pray-body { flex:1; min-width:0; }
+.pray-text { font-size:13.5px; word-break:break-word; }
+.pray-meta { font-size:11.5px; color:var(--muted); margin-top:3px; }
+.pray-act { flex:none; }
+.pray-add { display:flex; gap:7px; margin-top:10px; }
+.pray-add input {
+  flex:1; min-width:0; border:1px solid var(--border); background: var(--plane);
+  border-radius:10px; padding:8px 11px; font-size:13px;
+}
+.chip-p { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--brand); font-variant-numeric: tabular-nums; }
+
+/* Panneau « sujets en cours » de la page d'accueil */
+.pray-list { max-height:280px; overflow-y:auto; margin:0 -4px; padding:0 4px; }
+.pray-row {
+  display:flex; gap:11px; align-items:flex-start; width:100%; text-align:left;
+  padding:10px 8px; border:0; background:transparent; border-top:1px solid var(--grid);
+  cursor:pointer; border-radius:9px;
+}
+.pray-row:first-child { border-top:0; }
+.pray-row:hover { background: var(--surface-2); }
+.pray-row .dotb { width:7px; height:7px; border-radius:50%; background: var(--brand); flex:none; margin-top:6px; }
+.pray-row .pr-who { font-size:11.5px; color:var(--muted); margin-top:2px; }
+.pray-empty { padding:26px 8px; text-align:center; color:var(--muted); font-size:13px; }
+.comment { display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--grid); }
+.comment:first-of-type { border-top:0; }
+.c-body { min-width:0; flex:1; }
+.c-meta { font-size:12px; color:var(--muted); margin-bottom:2px; }
+.c-meta b { color: var(--ink); font-weight:600; }
+.c-text { font-size:13.5px; white-space:pre-wrap; word-break:break-word; }
+
+/* ---------- Modal ---------- */
+.modal {
+  position:fixed; z-index:110; top:50%; left:50%; transform: translate(-50%, -46%) scale(.97);
+  width:min(560px, calc(100% - 32px)); max-height: 88vh; overflow-y:auto;
+  background: var(--surface); border:1px solid var(--border); border-radius:18px;
+  box-shadow: 0 24px 64px rgba(11,11,11,.28); padding:22px 24px 20px;
+  opacity:0; pointer-events:none; transition: opacity .16s ease, transform .16s ease;
+}
+.modal.show { opacity:1; pointer-events:auto; transform: translate(-50%, -50%) scale(1); }
+.modal h2 { font-size:18px; margin-bottom:2px; }
+.modal .m-hint { font-size:12.5px; color:var(--muted); margin:0 0 18px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-grid .full { grid-column: 1 / -1; }
+.inp { display:flex; flex-direction:column; gap:5px; }
+.inp span { font-size:12.5px; color:var(--ink-2); font-weight:500; }
+.inp input, .inp select, .inp textarea {
+  border:1px solid var(--border); background: var(--plane); border-radius:10px;
+  padding:9px 11px; font-size:13.5px; width:100%;
+}
+.inp textarea { resize:vertical; min-height:64px; }
+.modal-foot { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+.err { color: var(--critical); font-size:12.5px; margin-top:10px; min-height:16px; }
+
+.note {
+  margin:22px 0 0; padding:12px 16px; border-radius:12px;
+  background: var(--surface-2); border:1px solid var(--border);
+  font-size:12.5px; color:var(--ink-2); display:flex; gap:10px; align-items:flex-start;
+}
+.note b { color: var(--ink); }
+
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 88px 1fr 56px; }
+}
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: 1fr; }
+  .brandmark p { display:none; }
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- ===================== Portail d'accès ===================== -->
+<div class="lock" id="lock">
+  <div class="lock-card">
+    <div class="lock-brand">
+      <div class="logo">TM</div>
+      <div>
+        <h1>TEAMS MBOCK</h1>
+        <p>Accès réservé à l'équipe</p>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab on" id="tabLogin"  type="button" role="tab">J'ai déjà un accès</button>
+      <button class="tab"    id="tabSignup" type="button" role="tab">Créer mon accès</button>
+    </div>
+
+    <!-- Connexion -->
+    <form id="loginForm" class="lock-form">
+      <label class="inp"><span>Votre nom</span>
+        <input id="loginNom" list="dlNoms" autocomplete="username" placeholder="Prénom Nom" required>
+      </label>
+      <label class="inp"><span>Mot de passe</span>
+        <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••.mbock" required>
+      </label>
+      <div class="err" id="loginErr"></div>
+      <button class="btn primary lock-go" type="submit" id="loginGo">Entrer</button>
+      <p class="lock-none" id="lockNone" hidden>Aucun accès n'existe encore sur ce navigateur. Commencez par <b>Créer mon accès</b>.</p>
+    </form>
+
+    <!-- Création -->
+    <form id="signupForm" class="lock-form" hidden>
+      <label class="inp"><span>Votre nom</span>
+        <input id="suNom" list="dlNoms" autocomplete="username" placeholder="Prénom Nom" required>
+        <span class="su-super" id="suSuper" hidden>✓ Nom reconnu : vous serez l'administrateur principal.</span>
+      </label>
+      <label class="inp"><span>Mot de passe</span>
+        <input id="suPwd" type="password" autocomplete="new-password" placeholder="••••••••.mbock" required>
+      </label>
+      <label class="inp"><span>Confirmer le mot de passe</span>
+        <input id="suPwd2" type="password" autocomplete="new-password" required>
+      </label>
+
+      <ul class="rules" id="rules">
+        <li data-rule="suffix"><i></i>Se termine par <code>.mbock</code></li>
+        <li data-rule="len"><i></i>Au moins 6 caractères <b>avant</b> <code>.mbock</code></li>
+        <li data-rule="mix"><i></i>Mélange lettres et chiffres</li>
+        <li data-rule="match"><i></i>Les deux saisies sont identiques</li>
+      </ul>
+
+      <div class="err" id="suErr"></div>
+      <button class="btn primary lock-go" type="submit" id="suGo">Créer mon accès</button>
+    </form>
+
+    <p class="lock-note">
+      <b>À savoir.</b> Ce tableau de bord fonctionne sans serveur : votre mot de passe n'est jamais stocké en clair
+      (PBKDF2-SHA256), mais il protège l'entrée de la page, pas le fichier lui-même. Ne mettez pas ici
+      d'information que vous ne confieriez pas à toute personne ayant accès à cet ordinateur.
+    </p>
+  </div>
+</div>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandmark">
+      <div class="logo">TM</div>
+      <div>
+        <h1>TEAMS MBOCK</h1>
+        <p>Suivi des membres &amp; des sorties d'évangélisation</p>
+      </div>
+    </div>
+
+    <div class="who">
+      <span class="who-av" id="meAv">?</span>
+      <span class="who-name" id="meName">—</span>
+      <span class="pill" id="meRole" hidden>Admin</span>
+      <button class="btn sm ghost" id="btnLogout" title="Se déconnecter">Quitter</button>
+    </div>
+
+    <button class="btn primary" id="btnAdd">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nouveau membre
+    </button>
+    <button class="btn icon" id="btnTheme" title="Basculer clair / sombre" aria-label="Basculer clair / sombre">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="btn icon" id="btnMenu" title="Données" aria-label="Données">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5h.01M12 12h.01M12 19h.01"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="kpis">
+    <div class="kpi">
+      <div class="k-label">Membres</div>
+      <div class="k-value" id="kpiTotal">—</div>
+      <div class="k-sub" id="kpiTotalSub">—</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">Nouveaux (30 j)</div>
+      <div class="k-value" id="kpiNouveaux">—</div>
+      <div class="k-sub" id="kpiNouveauxSub">—</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">À relancer</div>
+      <div class="k-value" id="kpiRelance">—</div>
+      <div class="k-sub" id="kpiRelanceSub">—</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">Commentaires</div>
+      <div class="k-value" id="kpiComm">—</div>
+      <div class="k-sub" id="kpiCommSub">—</div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-bottom:14px">
+    <div class="panel-head">
+      <h2>Où en est l'équipe</h2>
+      <span class="hint">Cliquez un statut pour filtrer</span>
+    </div>
+    <p class="panel-sub">Répartition des membres par étape de suivi.</p>
+    <div class="stack" id="statutStack"></div>
+    <div class="legend" id="statutLegend"></div>
+  </section>
+
+  <section class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Membres par ville</h2>
+        <span class="hint">Survolez une barre</span>
+      </div>
+      <p class="panel-sub">Cliquez une ville pour n'afficher qu'elle dans la liste ci-dessous.</p>
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Carte de l'équipe</h2>
+        <span class="hint">Taille = effectif</span>
+      </div>
+      <p class="panel-sub">Positions réelles des villes (WGS84) ; fond de carte schématique.</p>
+      <div class="map-holder"><svg id="mapSvg" viewBox="0 0 400 400" role="img" aria-label="Carte de répartition des membres en France"></svg></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <div class="panel-head">
+      <h2>Sujets de prière en cours</h2>
+      <span class="hint" id="prayCount"></span>
+    </div>
+    <p class="panel-sub">Cliquez un sujet pour ouvrir la fiche et donner des nouvelles.</p>
+    <div class="pray-list" id="prayList"></div>
+  </section>
+
+  <div class="filters">
+    <div class="field">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Rechercher un nom, une ville…" autocomplete="off">
+    </div>
+    <div class="field">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+      <select id="fVille"></select>
+    </div>
+    <div class="field">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      <select id="fStatut">
+        <option value="">Tous les statuts</option>
+        <option>Nouveau</option>
+        <option>En intégration</option>
+        <option>Membre</option>
+        <option>À relancer</option>
+      </select>
+    </div>
+    <span class="count" id="resCount"></span>
+  </div>
+
+  <section id="list"></section>
+
+  <p class="note">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+    <span><b>Jeu de test.</b> Les 22 villes, leurs effectifs et leurs coordonnées viennent du fichier <i>Liste des membres de l'équipe Mbock.xlsx</i>. Les <b>152 fiches nominatives sont générées au hasard</b> (noms fictifs) pour remplir chaque ville à son effectif réel — remplacez-les par les vrais membres. Tout est enregistré dans ce navigateur (<i>localStorage</i>) : les administrateurs peuvent sauvegarder ou transmettre l'ensemble via <b>Données ▸ Exporter</b>.</span>
+  </p>
+</div>
+
+<!-- Noms des membres, partagés par le portail et la nomination d'admins.
+     Hors de tout conteneur masqué, pour que l'auto-complétion reste active. -->
+<datalist id="dlNoms"></datalist>
+
+<!-- Tooltip -->
+<div id="tip"></div>
+
+<!-- Scrim -->
+<div class="scrim" id="scrim"></div>
+
+<!-- Drawer -->
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div style="flex:1;min-width:0">
+      <div class="d-title" id="dName">—</div>
+      <div class="d-sub" id="dSub">—</div>
+    </div>
+    <button class="btn icon ghost" id="dClose" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="dBody"></div>
+  <form class="drawer-foot" id="cForm">
+    <textarea id="cText" placeholder="Écrire un commentaire (suivi, prière, relance…)" rows="1"></textarea>
+    <button class="btn primary" type="submit">Publier</button>
+  </form>
+</aside>
+
+<!-- Modal: ajout membre -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <h2 id="modalTitle">Ajouter un nouveau membre</h2>
+  <p class="m-hint">Rencontré lors d'une sortie ? Enregistrez-le ici pour que l'équipe de sa ville puisse le suivre.</p>
+  <form id="addForm">
+    <div class="form-grid">
+      <label class="inp"><span>Prénom *</span><input name="prenom" required autocomplete="off"></label>
+      <label class="inp"><span>Nom *</span><input name="nom" required autocomplete="off"></label>
+      <label class="inp"><span>Ville *</span><select name="ville" id="addVille" required></select></label>
+      <label class="inp" id="wrapNouvelleVille" style="display:none"><span>Nom de la nouvelle ville</span><input name="nouvelleVille" autocomplete="off" placeholder="ex. Toulouse"></label>
+      <label class="inp"><span>Téléphone</span><input name="tel" autocomplete="off" placeholder="06 12 34 56 78"></label>
+      <label class="inp"><span>E-mail</span><input name="email" type="email" autocomplete="off"></label>
+      <label class="inp"><span>Statut</span>
+        <select name="statut">
+          <option>Nouveau</option><option>En intégration</option><option>Membre</option><option>À relancer</option>
+        </select>
+      </label>
+      <label class="inp"><span>Date de rencontre</span><input name="date" type="date"></label>
+      <label class="inp full"><span>Contexte / première note</span><textarea name="note" placeholder="Où l'avez-vous rencontré ? Besoin exprimé, suite à donner…"></textarea></label>
+      <label class="inp full"><span>Sujet de prière (facultatif)</span><input name="priere" autocomplete="off" placeholder="Ce que la personne demande dans la prière"></label>
+    </div>
+    <div class="err" id="addErr"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="addCancel">Annuler</button>
+      <button class="btn primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<!-- Modal: données -->
+<div class="modal" id="dataModal" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
+  <h2 id="dataTitle">Données</h2>
+  <p class="m-hint">Les données vivent dans ce navigateur. Exportez pour sauvegarder ou transmettre à un autre responsable.</p>
+
+  <div style="display:grid;gap:9px" id="dataTools">
+    <button class="btn" id="btnExport">⬇ Exporter en JSON (sauvegarde complète)</button>
+    <button class="btn" id="btnExportCsv">⬇ Exporter les membres en CSV (Excel)</button>
+    <button class="btn" id="btnImport">⬆ Importer une sauvegarde JSON</button>
+    <button class="btn" id="btnReset">↺ Réinitialiser avec les données de test</button>
+    <input type="file" id="fileIn" accept="application/json" hidden>
+  </div>
+  <p class="denied" id="dataDenied" hidden>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    <span>L'export et l'import des fichiers sont réservés aux administrateurs. Rapprochez-vous de <b id="denyWho">l'administrateur principal</b>.</span>
+  </p>
+
+  <h2 style="font-size:15px;margin:22px 0 2px">Mon accès</h2>
+  <p class="m-hint" id="accCount">—</p>
+  <div style="display:grid;gap:9px">
+    <button class="btn" id="btnPwd">🔑 Changer mon mot de passe</button>
+  </div>
+
+  <div id="adminPanel" hidden>
+    <h2 style="font-size:15px;margin:22px 0 2px">Administrateurs <span class="pill" id="adminCount"></span></h2>
+    <p class="m-hint">Vous êtes l'administrateur principal : vous seul pouvez nommer ou retirer les autres administrateurs.</p>
+    <div id="adminRows"></div>
+    <div class="adm-add">
+      <input id="admNom" list="dlNoms" autocomplete="off" placeholder="Nom de la personne à nommer">
+      <button class="btn primary" id="btnNameAdmin" type="button">Nommer</button>
+    </div>
+    <p class="m-hint" id="admFull" hidden>Les 4 places d'administrateur sont prises. Retirez quelqu'un pour en nommer un autre.</p>
+    <div style="display:grid;gap:9px;margin-top:12px">
+      <button class="btn" id="btnWipeAcc">⚠ Supprimer tous les accès de ce navigateur</button>
+    </div>
+  </div>
+
+  <div class="modal-foot"><button class="btn ghost" id="dataClose">Fermer</button></div>
+</div>
+
+<script>
+"use strict";
+
+/* =======================================================================
+   Données de référence — issues de "Liste des membres de l'équipe Mbock.xlsx"
+   (colonne x = latitude, colonne y = longitude)
+   ======================================================================= */
+const SEED_CITIES = [
+  { nom:"Grenoble",        lat:45.1842335, lon:5.71554,    effectif:40 },
+  { nom:"Lyon",            lat:45.7579507, lon:4.8351239,  effectif:21 },
+  { nom:"Marseille",       lat:43.280339,  lon:5.3806376,  effectif:15 },
+  { nom:"IDF",             lat:48.6807825, lon:2.5026637,  effectif:12 },
+  { nom:"Bordeaux",        lat:44.8637178, lon:-0.5860121, effectif:9  },
+  { nom:"Aix en Provence", lat:43.5360054, lon:5.3879121,  effectif:9  },
+  { nom:"Nancy",           lat:48.6880574, lon:6.1734322,  effectif:8  },
+  { nom:"Annemasse",       lat:46.1890335, lon:6.2476091,  effectif:7  },
+  { nom:"Valence",         lat:44.9234167, lon:4.9163851,  effectif:6  },
+  { nom:"Dijon",           lat:47.3318698, lon:5.0322191,  effectif:6  },
+  { nom:"Lille",           lat:50.6310806, lon:3.0468401,  effectif:4  },
+  { nom:"Nice",            lat:43.7031953, lon:7.252812,   effectif:3  },
+  { nom:"Strasbourg",      lat:48.5690969, lon:7.7620787,  effectif:2  },
+  { nom:"Compiegne",       lat:49.4006159, lon:2.8546645,  effectif:2  },
+  { nom:"Rennes",          lat:48.1159343, lon:-1.6884477, effectif:1  },
+  { nom:"Poitiers",        lat:46.5846304, lon:0.3714621,  effectif:1  },
+  { nom:"Nimes",           lat:43.8321558, lon:4.3428586,  effectif:1  },
+  { nom:"Nevers",          lat:46.9852047, lon:3.1597652,  effectif:1  },
+  { nom:"Montpellier",     lat:43.6100081, lon:3.8741693,  effectif:1  },
+  { nom:"Laval",           lat:48.0577943, lon:-0.7691828, effectif:1  },
+  { nom:"Chambery",        lat:45.5822346, lon:5.9063526,  effectif:1  },
+  { nom:"Angers",          lat:47.481896,  lon:-0.5629347, effectif:1  }
+];
+
+/* -----------------------------------------------------------------------
+   Jeu de test : les 152 membres sont générés au hasard, ville par ville,
+   pour respecter exactement l'effectif recensé de chaque ville.
+   Noms 100 % fictifs — à remplacer par les vrais via l'import JSON/CSV.
+   ----------------------------------------------------------------------- */
+const PRENOMS = [
+  "Grâce","Emmanuel","Sarah","Jonathan","Esther","David","Ruth","Samuel","Myriam","Josué",
+  "Déborah","Nathan","Priscille","Élie","Anna","Timothée","Rebecca","Paul","Lydie","Isaac",
+  "Marthe","Daniel","Naomi","Joseph","Rachel","Simon","Judith","Ézéchiel","Sephora","Aaron",
+  "Bénédicte","Gabriel","Sandrine","Christian","Aurélie","Franck","Nadège","Hervé","Céline","Boris",
+  "Prisca","Cédric","Laetitia","Yannick","Sonia","Olivier","Carine","Bertrand","Estelle","Guy",
+  "Michelle","Ferdinand","Josiane","Landry","Solange","Armel","Viviane","Ulrich","Clarisse","Serge",
+  "Christelle","Patrick","Larissa","Éric","Danielle","Alain","Blandine","Hugues","Sylvie","Marc"
+];
+const NOMS = [
+  "Ntonga","Rivière","Mendy","Fouda","Kamga","Nguéma","Belinga","Lefèvre","Tchoua","Etoundi",
+  "Manga","Essomba","Abanda","Mvondo","Ngo Bassong","Kouam","Djoumessi","Ateba","Moreau","Mbarga",
+  "Bertrand","Ondoua","Nkodo","Girard","Tsala","Bilong","Mercier","Bakari","Eyenga","Diallo",
+  "Simo","Ngoumou","Dubois","Nana","Owona","Faure","Mbida","Sow","Tchinda","Lambert",
+  "Zambo","Ngassa","Perrin","Ekani","Toko","Renard","Mballa","Cissé","Ngono","Roussel",
+  "Fotso","Bassong","Leroy","Mimbang","Ndongo","Chevalier","Kenfack","Traoré","Meyong","Barbier",
+  "Njoya","Amougou","Colin","Ebode","Sanou","Payet","Mengue","Bamba","Tiam","Garnier"
+];
+const CONTEXTES = [
+  "Rencontré lors de la sortie du samedi en centre-ville.",
+  "Sortie campus : a accepté de recevoir une Bible.",
+  "Contact donné par un membre de la famille.",
+  "Rencontré à la sortie du marché, a demandé la prière.",
+  "Sortie porte-à-porte dans le quartier.",
+  "Invité par un ami déjà dans le groupe.",
+  "Croisé lors de l'action de rue devant la gare.",
+  "Étudiant(e), disponible surtout le week-end.",
+  "Vient d'emménager dans la ville, cherche une église locale.",
+  "A répondu à l'invitation distribuée pendant la sortie.",
+  "Rencontré au parc pendant l'évangélisation de l'après-midi.",
+  "Participe au groupe de maison depuis peu.",
+  "A donné sa vie au Seigneur pendant la sortie.",
+  "Ancien contact repris cette année.",
+  "Amené par un collègue de travail.",
+  "Rencontré à la sortie de la fac, très ouvert au dialogue."
+];
+const COMMENTAIRES = [
+  "Contact pris cette semaine, tout va bien de son côté.",
+  "A demandé une Bible en français simple — je lui en apporte une dimanche.",
+  "Était au culte dimanche, pose des questions sur le baptême.",
+  "Injoignable depuis quelques semaines, quelqu'un le connaît personnellement ?",
+  "Vient à la prochaine sortie, je l'inscris sur la liste.",
+  "A rejoint le groupe de maison du mardi soir.",
+  "Sujet de prière : recherche d'emploi.",
+  "Déménage bientôt, à transférer vers l'équipe de sa nouvelle ville.",
+  "Belle progression, prêt(e) à servir dans l'accueil.",
+  "Rappel effectué, il/elle reprend contact après les vacances.",
+  "A participé à sa première sortie d'évangélisation, très motivé(e).",
+  "Merci de le/la mettre en binôme avec un(e) ancien(ne) du groupe.",
+  "Malade cette semaine, pensons à lui/elle dans la prière.",
+  "A invité deux amis au culte de dimanche dernier.",
+  "Ne répond plus aux messages, je tente un appel ce week-end.",
+  "Point de suivi fait : tout est clair sur les rendez-vous du groupe."
+];
+
+const SUJETS_PRIERE = [
+  "Recherche d'emploi",
+  "Santé de sa maman restée au pays",
+  "Réussite aux examens de fin d'année",
+  "Régularisation de sa situation administrative",
+  "Trouver un logement plus proche du travail",
+  "Paix et réconciliation dans son foyer",
+  "Croissance spirituelle et persévérance",
+  "Guérison complète après son opération",
+  "Sagesse pour une décision importante",
+  "Le retour de son frère à l'église",
+  "Son projet de mariage",
+  "Force pour tenir dans ses études",
+  "Ouverture de porte pour son projet",
+  "Protection pour sa famille au pays",
+  "Libération de ses dettes",
+  "Un travail stable pour son conjoint"
+];
+
+/* PRNG déterministe : le jeu de test est toujours identique d'un poste à l'autre */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ======================= Stockage ======================= */
+/* Certains contextes (navigation privée, iframe restreinte, cookies bloqués)
+   refusent localStorage : plutôt que de planter, on bascule sur une mémoire
+   volatile. Le tableau de bord reste utilisable, mais rien n'est conservé
+   après fermeture — l'utilisateur en est averti au premier chargement. */
+function coffre(source) {
+  const mem = Object.create(null);
+  let natif = null;
+  try {
+    natif = source();
+    const t = "__test_teams_mbock__";
+    natif.setItem(t, "1");
+    natif.removeItem(t);
+  } catch (e) { natif = null; }
+
+  return {
+    persistant: natif !== null,
+    get(k) { try { return natif ? natif.getItem(k) : (k in mem ? mem[k] : null); } catch (e) { return k in mem ? mem[k] : null; } },
+    set(k, v) { try { natif ? natif.setItem(k, v) : (mem[k] = v); } catch (e) { mem[k] = v; } },
+    del(k) { try { natif ? natif.removeItem(k) : delete mem[k]; } catch (e) { delete mem[k]; } }
+  };
+}
+const disque  = coffre(() => window.localStorage);
+const session = coffre(() => window.sessionStorage);
+
+const KEY  = "teams-mbock-dashboard-v1";
+const UKEY = "teams-mbock-user";
+let DB, me, openId = null, hi = null;
+const filters = { q:"", ville:"", statut:"" };
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+function buildSeed() {
+  const rnd  = mulberry32(20260721);
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+
+  const DAY   = 86400000;
+  const END   = Date.parse("2026-07-21");
+  const START = Date.parse("2024-09-01");
+  const isoOf = ms => new Date(ms).toISOString().slice(0, 10);
+
+  const used = new Set();
+  const uniqueName = () => {
+    for (let i = 0; i < 400; i++) {
+      const p = pick(PRENOMS), n = pick(NOMS);
+      if (!used.has(p + " " + n)) { used.add(p + " " + n); return [p, n]; }
+    }
+    const p = pick(PRENOMS), n = pick(NOMS) + " " + (used.size + 1);
+    used.add(p + " " + n); return [p, n];
+  };
+
+  const members = [];
+  SEED_CITIES.forEach(city => {
+    for (let i = 0; i < city.effectif; i++) {
+      const [prenom, nom] = uniqueName();
+      // distribution biaisée vers le récent : l'équipe gagne des membres en continu
+      const ms = START + Math.pow(rnd(), 0.55) * (END - START);
+      const date = isoOf(ms);
+      const anciennete = Math.floor((END - ms) / DAY);
+
+      // Les rencontres récentes sont logiquement des « Nouveau », les anciennes des « Membre »
+      let statut;
+      const r = rnd();
+      if (anciennete < 45)       statut = r < .70 ? "Nouveau" : "En intégration";
+      else if (anciennete < 150) statut = r < .45 ? "En intégration" : (r < .85 ? "Membre" : "À relancer");
+      else                       statut = r < .72 ? "Membre" : (r < .88 ? "En intégration" : "À relancer");
+
+      members.push({
+        id: uid(), prenom, nom, ville: city.nom, statut,
+        tel:   rnd() < .55 ? "06 " + [0,0,0,0].map(() => String(Math.floor(rnd() * 90) + 10)).join(" ") : "",
+        email: rnd() < .40 ? norm(prenom).replace(/[^a-z]/g, "") + "." + norm(nom).replace(/[^a-z]/g, "") + "@example.fr" : "",
+        date, note: pick(CONTEXTES),
+        ajoutePar: "Import initial", cree: date, comments: [], prieres: []
+      });
+    }
+  });
+
+  // Parrainage : une partie des fiches est attribuée à un membre plus ancien de la même ville
+  members.forEach(m => {
+    if (rnd() < .55) {
+      const aines = members.filter(x => x.ville === m.ville && x.date < m.date);
+      if (aines.length) m.ajoutePar = fullName(aines[Math.floor(rnd() * aines.length)]);
+    }
+  });
+
+  // Commentaires : ~45 fiches en reçoivent 1 à 3, signés par un membre de la même ville
+  members.forEach(m => {
+    if (rnd() > .30) return;
+    const auteurs = members.filter(x => x.ville === m.ville && x.id !== m.id);
+    const n = 1 + Math.floor(rnd() * 3);
+    for (let i = 0; i < n; i++) {
+      const base = Math.max(Date.parse(m.date), END - 150 * DAY);
+      m.comments.push({
+        id: uid(),
+        auteur: auteurs.length ? fullName(auteurs[Math.floor(rnd() * auteurs.length)]) : "Responsable " + m.ville,
+        date: isoOf(base + rnd() * (END - base)),
+        texte: pick(COMMENTAIRES)
+      });
+    }
+  });
+
+  // Sujets de prière : environ une fiche sur deux en porte un ou deux, dont quelques-uns déjà exaucés
+  members.forEach(m => {
+    if (rnd() > .5) return;
+    const dejaVus = [];
+    const n = rnd() < .75 ? 1 : 2;
+    for (let i = 0; i < n; i++) {
+      const texte = pick(SUJETS_PRIERE);
+      if (dejaVus.includes(texte)) continue;
+      dejaVus.push(texte);
+      const base = Math.max(Date.parse(m.date), END - 200 * DAY);
+      const depuis = base + rnd() * (END - base);
+      const exauce = rnd() < .22;
+      m.prieres.push({
+        id: uid(), texte, auteur: m.ajoutePar === "Import initial" ? fullName(m) : m.ajoutePar,
+        date: isoOf(depuis),
+        exauce,
+        dateExauce: exauce ? isoOf(depuis + rnd() * (END - depuis)) : null
+      });
+    }
+  });
+
+  return { version:1, cities: SEED_CITIES.map(c => ({ ...c })), members, admins: [] };
+}
+
+/* Une sauvegarde peut venir d'une version antérieure : on complète les champs
+   ajoutés depuis, plutôt que de la rejeter. */
+function normaliser(p) {
+  if (!Array.isArray(p.admins)) p.admins = [];
+  p.members.forEach(m => {
+    if (!Array.isArray(m.comments)) m.comments = [];
+    if (!Array.isArray(m.prieres))  m.prieres  = [];
+  });
+  return p;
+}
+
+function load() {
+  try {
+    const raw = disque.get(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && Array.isArray(p.members) && Array.isArray(p.cities)) {
+        normaliser(p);   // complète les champs absents des sauvegardes plus anciennes
+        return p;
+      }
+    }
+  } catch (e) { console.warn("Sauvegarde illisible, retour aux données de test.", e); }
+  return buildSeed();
+}
+function save() {
+  try { disque.set(KEY, JSON.stringify(DB)); }
+  catch (e) { alert("Impossible d'enregistrer (stockage du navigateur plein ou bloqué)."); }
+}
+
+/* ======================= Helpers ======================= */
+const $  = s => document.querySelector(s);
+const el = (t, c, txt) => { const n = document.createElement(t); if (c) n.className = c; if (txt != null) n.textContent = txt; return n; };
+const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const fullName = m => `${m.prenom} ${m.nom}`.trim();
+const initials = m => ((m.prenom[0] || "") + (m.nom[0] || "")).toUpperCase();
+const statutClass = s => ({ "Nouveau":"nouveau", "En intégration":"integration", "Membre":"membre", "À relancer":"suivi" }[s] || "nouveau");
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" });
+}
+function daysAgo(iso) {
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return Infinity;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function cityOf(nom) { return DB.cities.find(c => c.nom === nom); }
+function membersOf(nom) { return DB.members.filter(m => m.ville === nom); }
+
+/* Villes triées par nombre de fiches réelles (la mesure affichée partout),
+   l'effectif du fichier Excel restant disponible comme référence. */
+function citiesSorted() {
+  return DB.cities
+    .map(c => ({ ...c, fiches: membersOf(c.nom).length }))
+    .sort((a, b) => b.fiches - a.fiches || a.nom.localeCompare(b.nom, "fr"));
+}
+
+function filtered() {
+  const q = norm(filters.q);
+  return DB.members.filter(m =>
+    (!filters.ville  || m.ville === filters.ville) &&
+    (!filters.statut || m.statut === filters.statut) &&
+    (!q || norm(fullName(m)).includes(q) || norm(m.ville).includes(q) || norm(m.note).includes(q)
+        || m.prieres.some(p => norm(p.texte).includes(q)))
+  );
+}
+
+/* ======================= Tooltip ======================= */
+const tip = $("#tip");
+function showTip(evt, title, lines) {
+  tip.innerHTML = "";
+  tip.appendChild(el("div", "t-title", title));
+  lines.forEach(([k, v]) => {
+    const r = el("div", "t-line");
+    r.appendChild(el("span", null, k));
+    r.appendChild(el("b", null, String(v)));
+    tip.appendChild(r);
+  });
+  tip.classList.add("show");
+  moveTip(evt);
+}
+function moveTip(evt) {
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + r.width  > innerWidth  - 8) x = evt.clientX - r.width  - pad;
+  if (y + r.height > innerHeight - 8) y = evt.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + "px";
+  tip.style.top  = Math.max(8, y) + "px";
+}
+const hideTip = () => tip.classList.remove("show");
+
+/* ======================= Statuts ======================= */
+const STATUTS = [
+  { nom:"Membre",         cls:"membre",      couleur:"var(--good)" },
+  { nom:"En intégration", cls:"integration", couleur:"var(--warning)" },
+  { nom:"Nouveau",        cls:"nouveau",     couleur:"var(--brand)" },
+  { nom:"À relancer",     cls:"suivi",       couleur:"var(--critical)" }
+];
+function countByStatut(list) {
+  const o = {};
+  STATUTS.forEach(s => o[s.nom] = 0);
+  list.forEach(m => { o[m.statut] = (o[m.statut] || 0) + 1; });
+  return o;
+}
+
+/* ======================= KPI ======================= */
+function renderKPI() {
+  const cs = citiesSorted();
+  const total = DB.members.length;
+  const nouveaux = DB.members.filter(m => daysAgo(m.cree || m.date) <= 30).length;
+  const relance = DB.members.filter(m => m.statut === "À relancer").length;
+  const comments = DB.members.reduce((s, m) => s + m.comments.length, 0);
+  const suivies = DB.members.filter(m => m.comments.length).length;
+  const villesActives = cs.filter(c => c.fiches > 0).length;
+
+  $("#kpiTotal").textContent = total;
+  $("#kpiTotalSub").textContent = `répartis sur ${villesActives} ville${villesActives > 1 ? "s" : ""}`;
+
+  $("#kpiNouveaux").textContent = nouveaux;
+  $("#kpiNouveauxSub").textContent = "issus des dernières sorties";
+
+  $("#kpiRelance").textContent = relance;
+  $("#kpiRelanceSub").textContent = relance ? "contacts à recontacter" : "personne à recontacter";
+
+  $("#kpiComm").textContent = comments;
+  $("#kpiCommSub").textContent = `sur ${suivies} fiche${suivies > 1 ? "s" : ""} suivie${suivies > 1 ? "s" : ""}`;
+}
+
+/* ======================= Barre empilée des statuts ======================= */
+function renderStatuts() {
+  const counts = countByStatut(DB.members);
+  const total = DB.members.length || 1;
+
+  const stack = $("#statutStack");
+  stack.innerHTML = "";
+  STATUTS.forEach(s => {
+    const n = counts[s.nom];
+    if (!n) return;
+    const seg = el("div", "seg");
+    seg.style.background = s.couleur;
+    seg.style.flex = n;
+    const part = Math.round(n / total * 100);
+    if (n / total > .07) seg.appendChild(el("b", null, String(n)));
+    seg.addEventListener("mouseenter", e => showTip(e, s.nom, [["Membres", n], ["Part", part + " %"]]));
+    seg.addEventListener("mousemove", moveTip);
+    seg.addEventListener("mouseleave", hideTip);
+    seg.addEventListener("click", () => {
+      filters.statut = filters.statut === s.nom ? "" : s.nom;
+      syncControls(); renderStatuts(); renderList();
+      $("#list").scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+    stack.appendChild(seg);
+  });
+
+  const lg = $("#statutLegend");
+  lg.innerHTML = "";
+  STATUTS.forEach(s => {
+    const b = el("button", filters.statut === s.nom ? "on" : "");
+    b.type = "button";
+    const sw = el("i", "swatch");
+    sw.style.background = s.couleur;
+    b.appendChild(sw);
+    b.appendChild(el("span", null, s.nom));
+    b.appendChild(el("b", null, String(counts[s.nom])));
+    b.addEventListener("click", () => {
+      filters.statut = filters.statut === s.nom ? "" : s.nom;
+      syncControls(); renderStatuts(); renderList();
+    });
+    lg.appendChild(b);
+  });
+}
+
+/* ======================= Sujets de prière ======================= */
+const prieresEnCours = m => m.prieres.filter(p => !p.exauce);
+
+function renderPrieres() {
+  const host = $("#prayList");
+  host.innerHTML = "";
+
+  const items = [];
+  DB.members.forEach(m => prieresEnCours(m).forEach(p => items.push({ m, p })));
+  items.sort((a, b) => (b.p.date || "").localeCompare(a.p.date || ""));
+
+  const exauces = DB.members.reduce((s, m) => s + m.prieres.filter(p => p.exauce).length, 0);
+  $("#prayCount").textContent = items.length
+    ? `${items.length} en cours · ${exauces} exaucé${exauces > 1 ? "s" : ""}`
+    : "";
+
+  if (!items.length) {
+    host.appendChild(el("div", "pray-empty",
+      "Aucun sujet de prière en cours. Ouvrez une fiche pour en ajouter un."));
+    return;
+  }
+
+  items.forEach(({ m, p }) => {
+    const row = el("button", "pray-row");
+    row.type = "button";
+    row.appendChild(el("span", "dotb"));
+    const b = el("div", null);
+    b.style.minWidth = "0";
+    b.appendChild(el("div", "pray-text", p.texte));
+    b.appendChild(el("div", "pr-who", `${fullName(m)} · ${m.ville} · depuis le ${fmtDate(p.date)}`));
+    row.appendChild(b);
+    row.addEventListener("click", () => openMember(m.id));
+    host.appendChild(row);
+  });
+}
+
+/* ======================= Bar chart ======================= */
+function renderBars() {
+  const host = $("#bars");
+  host.innerHTML = "";
+  const cs = citiesSorted();
+  const max = Math.max(1, ...cs.map(c => c.fiches));
+
+  cs.forEach(c => {
+    const row = el("div", "bar-row" + (hi === c.nom ? " on" : ""));
+    row.dataset.ville = c.nom;
+    row.appendChild(el("div", "bar-label", c.nom));
+
+    const track = el("div", "bar-track");
+    if (c.fiches > 0) {
+      const fill = el("div", "bar-seg filled");
+      fill.style.width = (c.fiches / max * 100) + "%";
+      track.appendChild(fill);
+    }
+    row.appendChild(track);
+
+    const val = el("div", "bar-val");
+    val.innerHTML = `<b>${c.fiches}</b>`;
+    row.appendChild(val);
+
+    row.addEventListener("mouseenter", e => {
+      hi = c.nom; paintHighlight();
+      const k = countByStatut(membersOf(c.nom));
+      showTip(e, c.nom, [["Membres", c.fiches], ...STATUTS.filter(s => k[s.nom]).map(s => [s.nom, k[s.nom]])]);
+    });
+    row.addEventListener("mousemove", moveTip);
+    row.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
+    row.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
+
+    host.appendChild(row);
+  });
+}
+
+function paintHighlight() {
+  document.querySelectorAll(".bar-row, .bubble").forEach(n => {
+    n.classList.toggle("on", n.dataset.ville === hi);
+  });
+}
+
+/* ======================= Carte ======================= */
+/* Contour schématique de la France métropolitaine (lon, lat) */
+const FR = [
+  [2.55,51.09],[1.85,50.95],[1.58,50.87],[1.60,50.72],[1.55,50.22],[1.08,49.93],[0.10,49.49],
+  [-0.35,49.35],[-1.10,49.36],[-1.62,49.68],[-1.94,49.72],[-1.60,48.83],[-1.51,48.62],[-2.02,48.65],
+  [-3.05,48.78],[-4.49,48.39],[-4.74,48.04],[-4.30,47.80],[-3.37,47.73],[-3.13,47.50],[-2.20,47.27],
+  [-2.15,46.95],[-1.78,46.50],[-1.15,46.16],[-1.03,45.62],[-1.16,44.66],[-1.55,43.48],[-1.79,43.35],
+  [-0.75,42.80],[0.65,42.70],[1.44,42.50],[2.65,42.35],[3.03,42.44],[3.05,42.70],[3.20,43.15],
+  [3.70,43.40],[4.85,43.35],[5.35,43.30],[6.00,43.10],[6.65,43.25],[7.27,43.70],[7.53,43.78],
+  [6.85,44.35],[7.02,45.10],[6.80,45.85],[6.80,46.10],[6.15,46.15],[6.10,46.40],[6.80,47.05],
+  [7.00,47.50],[7.58,47.59],[7.62,48.30],[8.23,48.97],[7.10,49.15],[6.35,49.47],[5.80,49.55],
+  [4.87,49.80],[4.23,50.28],[3.66,50.34],[3.15,50.79],[2.55,51.09]
+];
+
+function renderMap() {
+  const svg = $("#mapSvg");
+  const W = 400, H = 400, PAD = 16;
+  const K = Math.cos(46.5 * Math.PI / 180);           // correction de longitude
+  const lons = FR.map(p => p[0]), lats = FR.map(p => p[1]);
+  const x0 = Math.min(...lons) * K, x1 = Math.max(...lons) * K;
+  const y0 = Math.min(...lats),    y1 = Math.max(...lats);
+  const s = Math.min((W - 2 * PAD) / (x1 - x0), (H - 2 * PAD) / (y1 - y0));
+  const ox = (W - (x1 - x0) * s) / 2, oy = (H - (y1 - y0) * s) / 2;
+  const px = lon => (lon * K - x0) * s + ox;
+  const py = lat => (y1 - lat) * s + oy;
+
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (t, a) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+
+  svg.appendChild(mk("path", { class:"fr-outline", d: FR.map((p, i) => (i ? "L" : "M") + px(p[0]).toFixed(1) + " " + py(p[1]).toFixed(1)).join(" ") + " Z" }));
+
+  // Les villes ajoutées à la main n'ont pas de coordonnées : on ne peut pas les placer
+  const cs = citiesSorted().filter(c => typeof c.lat === "number" && typeof c.lon === "number");
+  const max = Math.max(1, ...cs.map(c => c.fiches));
+  cs.slice().sort((a, b) => b.fiches - a.fiches).forEach(c => {
+    const r = 3.5 + Math.sqrt(c.fiches / max) * 17;
+    const cx = px(c.lon), cy = py(c.lat);
+    const b = mk("circle", { class:"bubble", cx:cx.toFixed(1), cy:cy.toFixed(1), r:r.toFixed(1) });
+    b.dataset.ville = c.nom;
+    b.addEventListener("mouseenter", e => {
+      hi = c.nom; paintHighlight();
+      showTip(e, c.nom, [["Membres", c.fiches], ["Latitude", c.lat.toFixed(4)], ["Longitude", c.lon.toFixed(4)]]);
+    });
+    b.addEventListener("mousemove", moveTip);
+    b.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
+    b.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
+    svg.appendChild(b);
+    if (c.fiches >= 6) {
+      const t = mk("text", { class:"bubble-label", x:(cx + r + 3).toFixed(1), y:(cy + 3).toFixed(1) });
+      t.textContent = c.nom;
+      svg.appendChild(t);
+    }
+  });
+}
+
+/* ======================= Liste ======================= */
+function renderList() {
+  const host = $("#list");
+  host.innerHTML = "";
+  const res = filtered();
+  const byCity = new Map();
+  res.forEach(m => { if (!byCity.has(m.ville)) byCity.set(m.ville, []); byCity.get(m.ville).push(m); });
+
+  $("#resCount").textContent = `${res.length} fiche${res.length > 1 ? "s" : ""} · ${byCity.size} ville${byCity.size > 1 ? "s" : ""}`;
+
+  if (!res.length) {
+    host.appendChild(el("div", "empty", "Aucun membre ne correspond à cette recherche."));
+    return;
+  }
+
+  const order = citiesSorted().map(c => c.nom).filter(n => byCity.has(n));
+  [...byCity.keys()].forEach(n => { if (!order.includes(n)) order.push(n); });
+
+  const expandAll = !!(filters.q || filters.ville || filters.statut);
+
+  order.forEach(nom => {
+    const list = byCity.get(nom).slice().sort((a, b) => (b.cree || b.date || "").localeCompare(a.cree || a.date || ""));
+    const tous = membersOf(nom);
+
+    const box = el("div", "city" + (expandAll ? " open" : ""));
+
+    const head = el("button", "city-head");
+    head.type = "button";
+    head.innerHTML = `<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>`;
+    head.appendChild(el("span", "city-name", nom));
+
+    const meta = el("div", "city-meta");
+    const affiches = list.length === tous.length ? `${tous.length} membre${tous.length > 1 ? "s" : ""}`
+                                                 : `${list.length} sur ${tous.length} membres`;
+    meta.appendChild(el("span", null, affiches));
+
+    const k = countByStatut(tous);
+    const ms = el("div", "mini-stack");
+    ms.title = STATUTS.filter(s => k[s.nom]).map(s => `${k[s.nom]} ${s.nom.toLowerCase()}`).join(" · ");
+    STATUTS.forEach(s => {
+      if (!k[s.nom]) return;
+      const i = el("i");
+      i.style.background = s.couleur;
+      i.style.flex = k[s.nom];
+      ms.appendChild(i);
+    });
+    meta.appendChild(ms);
+    head.appendChild(meta);
+    head.addEventListener("click", () => box.classList.toggle("open"));
+    box.appendChild(head);
+
+    const body = el("div", "city-body");
+    list.forEach(m => body.appendChild(memberRow(m)));
+    box.appendChild(body);
+    host.appendChild(box);
+  });
+}
+
+function memberRow(m) {
+  const row = el("div", "member");
+  row.appendChild(el("div", "avatar", initials(m)));
+
+  const main = el("div", "m-main");
+  main.appendChild(el("div", "m-name", fullName(m)));
+  const ajout = m.ajoutePar && m.ajoutePar !== "Import initial" ? ` · ajouté par ${m.ajoutePar}` : "";
+  main.appendChild(el("div", "m-sub", `${fmtDate(m.date)}${ajout}`));
+  row.appendChild(main);
+
+  const right = el("div", "m-right");
+  const nPri = prieresEnCours(m).length;
+  if (nPri) {
+    const chip = el("span", "chip-p");
+    chip.title = `${nPri} sujet${nPri > 1 ? "s" : ""} de prière en cours`;
+    chip.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z"/></svg><span>${nPri}</span>`;
+    right.appendChild(chip);
+  }
+  if (m.comments.length) {
+    const chip = el("span", "chip-c");
+    chip.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg><span>${m.comments.length}</span>`;
+    right.appendChild(chip);
+  }
+  const b = el("span", "badge " + statutClass(m.statut));
+  b.appendChild(el("i", "dot"));
+  b.appendChild(el("span", null, m.statut));
+  right.appendChild(b);
+  row.appendChild(right);
+
+  row.addEventListener("click", () => openMember(m.id));
+  return row;
+}
+
+/* ======================= Drawer / commentaires ======================= */
+function openMember(id) {
+  const m = DB.members.find(x => x.id === id);
+  if (!m) return;
+  openId = id;
+  $("#dName").textContent = fullName(m);
+  $("#dSub").textContent = `${m.ville} · ${m.statut}`;
+
+  const body = $("#dBody");
+  body.innerHTML = "";
+
+  const ul = el("ul", "meta-list");
+  const rows = [
+    ["Ville", m.ville],
+    ["Statut", m.statut],
+    ["Rencontré le", fmtDate(m.date)],
+    ["Téléphone", m.tel || "—"],
+    ["E-mail", m.email || "—"],
+    ["Ajouté par", m.ajoutePar || "—"],
+    ["Contexte", m.note || "—"]
+  ];
+  rows.forEach(([k, v]) => {
+    const li = el("li");
+    li.appendChild(el("span", "k", k));
+    li.appendChild(el("span", "v", v));
+    ul.appendChild(li);
+  });
+  body.appendChild(ul);
+
+  /* --- Sujets de prière --- */
+  const enCours = prieresEnCours(m).length;
+  body.appendChild(el("div", "c-head",
+    `Sujets de prière${enCours ? ` (${enCours} en cours)` : ""}`));
+
+  if (!m.prieres.length) {
+    body.appendChild(el("div", "pray-empty", "Aucun sujet pour l'instant. Demandez-lui ce qu'il/elle souhaite confier à la prière."));
+  } else {
+    m.prieres.slice()
+      .sort((a, b) => (a.exauce - b.exauce) || (b.date || "").localeCompare(a.date || ""))
+      .forEach(p => {
+        const w = el("div", "pray" + (p.exauce ? " done" : ""));
+        const pb = el("div", "pray-body");
+        pb.appendChild(el("div", "pray-text", p.texte));
+        pb.appendChild(el("div", "pray-meta", p.exauce
+          ? `Exaucé le ${fmtDate(p.dateExauce)} · confié par ${p.auteur}`
+          : `Confié par ${p.auteur} le ${fmtDate(p.date)}`));
+        w.appendChild(pb);
+
+        const act = el("div", "pray-act");
+        const b = el("button", "btn sm", p.exauce ? "Rouvrir" : "Exaucé");
+        b.type = "button";
+        b.addEventListener("click", () => {
+          p.exauce = !p.exauce;
+          p.dateExauce = p.exauce ? todayISO() : null;
+          save();
+          openMember(m.id);
+          renderPrieres();
+        });
+        act.appendChild(b);
+        w.appendChild(act);
+        body.appendChild(w);
+      });
+  }
+
+  const addP = el("div", "pray-add");
+  const inp = el("input");
+  inp.type = "text";
+  inp.placeholder = "Ajouter un sujet de prière…";
+  const btnP = el("button", "btn", "Ajouter");
+  btnP.type = "button";
+  const ajouterPriere = () => {
+    const t = inp.value.trim();
+    if (!t) return;
+    m.prieres.push({ id: uid(), texte: t, auteur: me, date: todayISO(), exauce: false, dateExauce: null });
+    save();
+    openMember(m.id);
+    renderPrieres(); renderList();
+  };
+  btnP.addEventListener("click", ajouterPriere);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ajouterPriere(); } });
+  addP.appendChild(inp); addP.appendChild(btnP);
+  body.appendChild(addP);
+
+  const cHead = el("div", "c-head", `Commentaires (${m.comments.length})`);
+  cHead.style.marginTop = "24px";
+  body.appendChild(cHead);
+  if (!m.comments.length) {
+    body.appendChild(el("div", "empty", "Aucun commentaire. Soyez le premier à donner des nouvelles."));
+  } else {
+    m.comments.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).forEach(c => {
+      const w = el("div", "comment");
+      const av = el("div", "avatar");
+      av.textContent = (c.auteur || "?").split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+      w.appendChild(av);
+      const cb = el("div", "c-body");
+      const meta = el("div", "c-meta");
+      meta.innerHTML = `<b>${escapeHtml(c.auteur)}</b> · ${fmtDate(c.date)}`;
+      cb.appendChild(meta);
+      cb.appendChild(el("div", "c-text", c.texte));
+      w.appendChild(cb);
+      body.appendChild(w);
+    });
+  }
+
+  $("#drawer").classList.add("show");
+  $("#drawer").setAttribute("aria-hidden", "false");
+  $("#scrim").classList.add("show");
+}
+const escapeHtml = s => (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function closeDrawer() {
+  openId = null;
+  $("#drawer").classList.remove("show");
+  $("#drawer").setAttribute("aria-hidden", "true");
+  if (!$("#modal").classList.contains("show") && !$("#dataModal").classList.contains("show")) $("#scrim").classList.remove("show");
+}
+
+$("#cForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const txt = $("#cText").value.trim();
+  if (!txt || !openId) return;
+  if (!me) { fermerSession(); return; }
+  const m = DB.members.find(x => x.id === openId);
+  m.comments.push({ id: uid(), auteur: me, date: todayISO(), texte: txt });
+  save();
+  $("#cText").value = "";
+  $("#cText").style.height = "auto";
+  openMember(openId);
+  renderKPI(); renderList();
+});
+$("#cText").addEventListener("input", e => {
+  e.target.style.height = "auto";
+  e.target.style.height = Math.min(130, e.target.scrollHeight) + "px";
+});
+
+/* ======================= Ajout d'un membre ======================= */
+function openModal() {
+  if (!me) { fermerSession(); return; }
+  const sel = $("#addVille");
+  sel.innerHTML = "";
+  citiesSorted().forEach(c => sel.appendChild(new Option(c.nom, c.nom)));
+  sel.appendChild(new Option("+ Nouvelle ville…", "__new"));
+  const meMember = DB.members.find(x => fullName(x) === me);
+  if (meMember) sel.value = meMember.ville;
+  $("#wrapNouvelleVille").style.display = "none";
+  $("#addForm").querySelector('[name="date"]').value = todayISO();
+  $("#addErr").textContent = "";
+  $("#modal").classList.add("show");
+  $("#scrim").classList.add("show");
+  setTimeout(() => $("#addForm").querySelector('[name="prenom"]').focus(), 60);
+}
+function closeModal() {
+  $("#modal").classList.remove("show");
+  $("#addForm").reset();
+  if (!$("#drawer").classList.contains("show") && !$("#dataModal").classList.contains("show")) $("#scrim").classList.remove("show");
+}
+$("#addVille").addEventListener("change", e => {
+  $("#wrapNouvelleVille").style.display = e.target.value === "__new" ? "" : "none";
+});
+
+$("#addForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const g = k => (f.get(k) || "").toString().trim();
+
+  let ville = g("ville");
+  if (ville === "__new") {
+    ville = g("nouvelleVille");
+    if (!ville) { $("#addErr").textContent = "Indiquez le nom de la nouvelle ville."; return; }
+    if (!cityOf(ville)) DB.cities.push({ nom: ville, lat: null, lon: null, effectif: 0 });
+  }
+
+  const prenom = g("prenom"), nom = g("nom");
+  if (DB.members.some(m => norm(fullName(m)) === norm(prenom + " " + nom) && m.ville === ville)) {
+    $("#addErr").textContent = "Cette personne existe déjà pour cette ville.";
+    return;
+  }
+
+  const m = {
+    id: uid(), prenom, nom, ville,
+    statut: g("statut") || "Nouveau",
+    tel: g("tel"), email: g("email"),
+    date: g("date") || todayISO(),
+    note: g("note"),
+    ajoutePar: me, cree: todayISO(), comments: [], prieres: []
+  };
+  const p1 = g("priere");
+  if (p1) m.prieres.push({ id: uid(), texte: p1, auteur: me, date: todayISO(), exauce: false, dateExauce: null });
+  DB.members.push(m);
+  save();
+  closeModal();
+  filters.q = ""; filters.statut = ""; filters.ville = ville;
+  syncControls(); renderAll();
+  openMember(m.id);
+});
+
+/* ======================= Données (export / import) ======================= */
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+$("#btnExport").addEventListener("click", () => {
+  if (!exigerAdmin()) return;
+  download(`teams-mbock-${todayISO()}.json`, JSON.stringify(DB, null, 2), "application/json");
+});
+
+$("#btnExportCsv").addEventListener("click", () => {
+  if (!exigerAdmin()) return;
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["Prénom","Nom","Ville","Statut","Téléphone","E-mail","Date de rencontre","Ajouté par","Contexte",
+                "Sujets de prière en cours","Sujets exaucés","Nb commentaires"];
+  const rows = DB.members.map(m => [
+    m.prenom, m.nom, m.ville, m.statut, m.tel, m.email, m.date, m.ajoutePar, m.note,
+    prieresEnCours(m).map(p => p.texte).join(" | "),
+    m.prieres.filter(p => p.exauce).map(p => p.texte).join(" | "),
+    m.comments.length
+  ].map(q).join(";"));
+  download(`membres-teams-mbock-${todayISO()}.csv`, "﻿" + head.map(q).join(";") + "\n" + rows.join("\n"), "text/csv;charset=utf-8");
+});
+
+$("#btnImport").addEventListener("click", () => { if (exigerAdmin()) $("#fileIn").click(); });
+$("#fileIn").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file || !exigerAdmin()) { e.target.value = ""; return; }
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(r.result);
+      if (!p || !Array.isArray(p.members) || !Array.isArray(p.cities)) throw new Error("format");
+      normaliser(p);
+      const adm = p.admins.length ? `\nAdministrateurs du fichier : ${[SUPER_ADMIN, ...p.admins].join(", ")}.` : "";
+      if (!confirm(`Remplacer les données actuelles par ce fichier (${p.members.length} fiches) ?${adm}`)) return;
+      DB = p; save(); buildWho(); majRole(); syncControls(); renderAll(); closeData();
+    } catch (err) { alert("Fichier invalide : ce n'est pas une sauvegarde du tableau de bord."); }
+  };
+  r.readAsText(file);
+  e.target.value = "";
+});
+
+$("#btnReset").addEventListener("click", () => {
+  if (!exigerAdmin()) return;
+  if (!confirm("Effacer toutes les données saisies et revenir aux 152 fiches de test ?")) return;
+  DB = buildSeed(); save(); buildWho(); filters.q = filters.ville = filters.statut = ""; syncControls(); renderAll(); closeData();
+});
+
+function openData() {
+  const n = accounts().length;
+  $("#accCount").textContent =
+    (n === 1 ? "1 accès enregistré sur ce navigateur" : `${n} accès enregistrés sur ce navigateur`) +
+    ` · vous êtes connecté en tant que ${me}${isAdmin(me) ? (isSuper(me) ? " (administrateur principal)" : " (administrateur)") : ""}.`;
+  majRole();
+  $("#dataModal").classList.add("show");
+  $("#scrim").classList.add("show");
+}
+
+/* Changement de mot de passe : l'ancien est exigé, le nouveau repasse par les mêmes règles */
+$("#btnPwd").addEventListener("click", async () => {
+  const u = findAccount(me);
+  if (!u) { alert("Aucun accès trouvé pour votre nom."); return; }
+
+  const ancien = prompt("Votre mot de passe actuel :");
+  if (ancien === null) return;
+  if (!sameHash(await derive(ancien, u.salt, u.iter), u.hash)) { alert("Mot de passe actuel incorrect."); return; }
+
+  const nouveau = prompt(`Nouveau mot de passe (au moins ${MIN_AVANT_SUFFIXE} caractères, lettres + chiffres, terminé par « ${SUFFIX} ») :`);
+  if (nouveau === null) return;
+  const r = checkRules(nouveau, nouveau);
+  if (!r.suffix) { alert(`Le mot de passe doit se terminer par « ${SUFFIX} ».`); return; }
+  if (!r.len)    { alert(`Il faut au moins ${MIN_AVANT_SUFFIXE} caractères avant « ${SUFFIX} ».`); return; }
+  if (!r.mix)    { alert("Mélangez lettres et chiffres avant le suffixe."); return; }
+
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await derive(nouveau, salt, ITER);
+  saveAccounts(accounts().map(x => norm(x.nom) === norm(u.nom) ? { ...x, salt, hash, iter: ITER } : x));
+  alert("Mot de passe modifié.");
+});
+
+$("#btnWipeAcc").addEventListener("click", () => {
+  if (!isSuper(me)) { alert(`Action réservée à ${SUPER_ADMIN}.`); return; }
+  if (!confirm("Supprimer TOUS les accès enregistrés sur ce navigateur ?\n\nLes membres et commentaires sont conservés, mais chacun devra recréer son mot de passe.")) return;
+  disque.del(AKEY);
+  closeData();
+  fermerSession();
+});
+function closeData() {
+  $("#dataModal").classList.remove("show");
+  if (!$("#drawer").classList.contains("show") && !$("#modal").classList.contains("show")) $("#scrim").classList.remove("show");
+}
+
+/* ======================= Contrôles ======================= */
+function buildWho() {
+  $("#meName").textContent = me || "—";
+  $("#meAv").textContent = me ? me.split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase() : "?";
+  const dl = $("#dlNoms");
+  dl.innerHTML = "";
+  DB.members.slice().sort((a, b) => fullName(a).localeCompare(fullName(b), "fr"))
+    .forEach(m => dl.appendChild(new Option(fullName(m))));
+}
+
+function syncControls() {
+  const sel = $("#fVille"), cur = filters.ville;
+  sel.innerHTML = "";
+  sel.appendChild(new Option("Toutes les villes", ""));
+  citiesSorted().forEach(c => sel.appendChild(new Option(`${c.nom} (${c.fiches})`, c.nom)));
+  sel.value = cur;
+  $("#fStatut").value = filters.statut;
+  $("#q").value = filters.q;
+}
+$("#q").addEventListener("input", e => { filters.q = e.target.value; renderList(); });
+$("#fVille").addEventListener("change", e => { filters.ville = e.target.value; renderList(); });
+$("#fStatut").addEventListener("change", e => { filters.statut = e.target.value; renderStatuts(); renderList(); });
+
+/* ======================= Divers ======================= */
+$("#btnAdd").addEventListener("click", openModal);
+$("#addCancel").addEventListener("click", closeModal);
+$("#dClose").addEventListener("click", closeDrawer);
+$("#btnMenu").addEventListener("click", openData);
+$("#dataClose").addEventListener("click", closeData);
+$("#scrim").addEventListener("click", () => { closeDrawer(); closeModal(); closeData(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeDrawer(); closeModal(); closeData(); } });
+
+$("#btnTheme").addEventListener("click", () => {
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur = document.documentElement.getAttribute("data-theme") || (dark ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  disque.set("teams-mbock-theme", next);
+});
+(function initTheme() {
+  const t = disque.get("teams-mbock-theme");
+  if (t) document.documentElement.setAttribute("data-theme", t);
+})();
+
+let rz;
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderMap, 150); });
+
+/* =======================================================================
+   Portail d'accès
+   -----------------------------------------------------------------------
+   Le mot de passe n'est jamais stocké : on ne conserve qu'une empreinte
+   PBKDF2-SHA256 (600 000 itérations) et un sel aléatoire propre à chaque
+   personne. Deux mots de passe identiques donnent donc deux empreintes
+   différentes, et l'empreinte ne permet pas de retrouver le mot de passe.
+
+   Limite assumée : cette page n'a pas de serveur. Le portail protège
+   l'ENTRÉE de l'interface, pas le fichier — les données restent lisibles
+   par quiconque a accès à ce navigateur.
+   ======================================================================= */
+const AKEY   = "teams-mbock-acces";
+const SKEY   = "teams-mbock-session";
+const SUFFIX = ".mbock";
+const ITER   = 600000;   // recommandation OWASP pour PBKDF2-HMAC-SHA256
+const MIN_AVANT_SUFFIXE = 6;
+
+const enc = new TextEncoder();
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+const fromHex = h => new Uint8Array(h.match(/.{2}/g).map(b => parseInt(b, 16)));
+
+function cryptoOk() {
+  return !!(window.crypto && crypto.subtle && crypto.getRandomValues);
+}
+
+async function derive(pwd, saltHex, iter) {
+  const key = await crypto.subtle.importKey("raw", enc.encode(pwd), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name:"PBKDF2", salt: fromHex(saltHex), iterations: iter, hash:"SHA-256" }, key, 256);
+  return toHex(bits);
+}
+
+/* Comparaison à temps constant : ne révèle pas où la première différence apparaît */
+function sameHash(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function accounts() {
+  try {
+    const p = JSON.parse(disque.get(AKEY) || "{}");
+    return Array.isArray(p.users) ? p.users : [];
+  } catch (e) { return []; }
+}
+function saveAccounts(users) { disque.set(AKEY, JSON.stringify({ version:1, users })); }
+function findAccount(nom) { return accounts().find(u => norm(u.nom) === norm(nom)); }
+
+/* ======================= Rôles ======================= */
+/* L'administrateur principal est fixé dans le code : son statut ne peut pas
+   lui être retiré depuis l'interface, et lui seul nomme les autres.
+
+   Les administrateurs nommés sont stockés dans DB.admins (une liste de noms),
+   et NON dans les comptes : on peut donc nommer quelqu'un avant même qu'il
+   ait créé son accès, et la liste voyage avec l'export JSON. */
+const SUPER_ADMIN = "Désiré KENY";
+const MAX_ADMINS  = 4;                 // le principal compte dans les 4
+
+const isSuper = nom => norm(nom) === norm(SUPER_ADMIN);
+function isAdmin(nom) {
+  if (!nom) return false;
+  return isSuper(nom) || DB.admins.some(a => norm(a) === norm(nom));
+}
+function adminNames() { return [SUPER_ADMIN, ...DB.admins]; }
+
+/* Reflète le rôle courant dans l'interface */
+function majRole() {
+  const admin = isAdmin(me), sup = isSuper(me);
+
+  const pill = $("#meRole");
+  pill.hidden = !admin;
+  pill.textContent = sup ? "Admin principal" : "Admin";
+  pill.classList.toggle("super", sup);
+
+  $("#dataTools").hidden  = !admin;
+  $("#dataDenied").hidden = admin;
+  $("#denyWho").textContent = SUPER_ADMIN;
+
+  $("#adminPanel").hidden = !sup;
+  if (sup) renderAdmins();
+}
+
+function renderAdmins() {
+  const noms = adminNames();
+  const plein = noms.length >= MAX_ADMINS;
+  $("#adminCount").textContent = `${noms.length} / ${MAX_ADMINS}`;
+
+  const host = $("#adminRows");
+  host.innerHTML = "";
+
+  noms.forEach(nom => {
+    const sup = isSuper(nom);
+    const row = el("div", "adm-row");
+    row.appendChild(el("span", "adm-name", nom));
+    row.appendChild(el("span", "pill" + (sup ? " super" : ""), sup ? "Principal" : "Admin"));
+
+    if (sup) {
+      row.appendChild(el("span", "adm-you", "vous"));
+    } else {
+      const compte = findAccount(nom);
+      if (!compte) row.appendChild(el("span", "adm-you", "accès pas encore créé"));
+      const b = el("button", "btn sm", "Retirer");
+      b.type = "button";
+      b.addEventListener("click", () => {
+        if (!confirm(`Retirer les droits d'administrateur à ${nom} ?`)) return;
+        DB.admins = DB.admins.filter(a => norm(a) !== norm(nom));
+        save(); renderAdmins(); majRole();
+      });
+      row.appendChild(b);
+    }
+    host.appendChild(row);
+  });
+
+  $("#admNom").disabled = plein;
+  $("#btnNameAdmin").disabled = plein;
+  $("#admFull").hidden = !plein;
+}
+
+/* Nomination directe : le nom suffit, la personne n'a pas besoin d'avoir un accès */
+$("#btnNameAdmin").addEventListener("click", () => {
+  if (!isSuper(me)) { alert(`Seul ${SUPER_ADMIN} peut nommer un administrateur.`); return; }
+
+  const champ = $("#admNom");
+  const nom = champ.value.trim().replace(/\s+/g, " ");
+
+  if (nom.length < 3)   { alert("Indiquez le prénom et le nom de la personne."); return; }
+  if (isSuper(nom))     { alert("Vous êtes déjà l'administrateur principal."); return; }
+  if (isAdmin(nom))     { alert(`${nom} est déjà administrateur.`); return; }
+  if (adminNames().length >= MAX_ADMINS) { alert(`Les ${MAX_ADMINS} places sont prises.`); return; }
+
+  // Nom absent de la liste des membres : sans doute une faute de frappe
+  const connu = DB.members.some(m => norm(fullName(m)) === norm(nom));
+  if (!connu && !confirm(`« ${nom} » ne figure pas dans la liste des membres.\n\nLe nommer quand même administrateur ?`)) return;
+
+  DB.admins.push(nom);
+  save();
+  champ.value = "";
+  renderAdmins();
+  majRole();
+  alert(`${nom} est administrateur.\n\nIl/elle pourra exporter et importer les fichiers dès la création de son accès, avec ce nom exact.`);
+});
+
+/* Garde-fou appliqué à chaque action réservée */
+function exigerAdmin() {
+  if (isAdmin(me)) return true;
+  alert(`Action réservée aux administrateurs.\n\nAdministrateurs actuels : ${adminNames().join(", ")}.`);
+  return false;
+}
+
+/* --- Règles du mot de passe --- */
+function checkRules(pwd, pwd2) {
+  const suffix = pwd.endsWith(SUFFIX);
+  const base   = suffix ? pwd.slice(0, -SUFFIX.length) : "";
+  return {
+    suffix,
+    len:   base.length >= MIN_AVANT_SUFFIXE,
+    mix:   /[a-zA-ZÀ-ÿ]/.test(base) && /[0-9]/.test(base),
+    match: pwd.length > 0 && pwd === pwd2
+  };
+}
+function paintRules() {
+  const r = checkRules($("#suPwd").value, $("#suPwd2").value);
+  document.querySelectorAll("#rules li").forEach(li => {
+    li.classList.toggle("ok", !!r[li.dataset.rule]);
+  });
+  return r;
+}
+["#suPwd", "#suPwd2"].forEach(s => $(s).addEventListener("input", paintRules));
+
+/* Confirme à l'administrateur principal que son nom est bien reconnu */
+$("#suNom").addEventListener("input", e => {
+  $("#suSuper").hidden = !isSuper(e.target.value.trim().replace(/\s+/g, " "));
+});
+
+/* --- Bascule des onglets --- */
+function showTab(which) {
+  const login = which === "login";
+  $("#tabLogin").classList.toggle("on", login);
+  $("#tabSignup").classList.toggle("on", !login);
+  $("#loginForm").hidden = !login;
+  $("#signupForm").hidden = login;
+  $("#loginErr").textContent = "";
+  $("#suErr").textContent = "";
+  setTimeout(() => $(login ? "#loginNom" : "#suNom").focus(), 40);
+}
+$("#tabLogin").addEventListener("click", () => showTab("login"));
+$("#tabSignup").addEventListener("click", () => showTab("signup"));
+
+/* --- Création d'un accès --- */
+$("#signupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#suErr");
+  err.textContent = "";
+
+  if (!cryptoOk()) { err.textContent = "Ce navigateur ne permet pas de chiffrer le mot de passe. Ouvrez la page dans Chrome, Edge ou Firefox à jour."; return; }
+
+  const nom = $("#suNom").value.trim().replace(/\s+/g, " ");
+  const pwd = $("#suPwd").value, pwd2 = $("#suPwd2").value;
+
+  if (nom.length < 3)   { err.textContent = "Indiquez votre prénom et votre nom."; return; }
+  if (findAccount(nom)) { err.textContent = "Un accès existe déjà pour ce nom. Utilisez l'onglet « J'ai déjà un accès »."; return; }
+
+  const r = checkRules(pwd, pwd2);
+  if (!r.suffix) { err.textContent = `Le mot de passe doit se terminer par « ${SUFFIX} ».`; return; }
+  if (!r.len)    { err.textContent = `Il faut au moins ${MIN_AVANT_SUFFIXE} caractères avant « ${SUFFIX} ».`; return; }
+  if (!r.mix)    { err.textContent = "Mélangez lettres et chiffres avant le suffixe."; return; }
+  if (!r.match)  { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
+
+  const btn = $("#suGo");
+  btn.disabled = true; btn.textContent = "Création…";
+  try {
+    const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+    const hash = await derive(pwd, salt, ITER);
+    // Le rôle ne dépend pas du compte : il vient de DB.admins (ou du nom de l'admin principal)
+    saveAccounts(accounts().concat({ nom, salt, hash, iter: ITER, cree: todayISO() }));
+    $("#suPwd").value = $("#suPwd2").value = "";
+    ouvrirSession(nom);
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = "La création a échoué. Réessayez.";
+  } finally {
+    btn.disabled = false; btn.textContent = "Créer mon accès";
+  }
+});
+
+/* --- Connexion --- */
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#loginErr");
+  err.textContent = "";
+
+  if (!cryptoOk()) { err.textContent = "Ce navigateur ne permet pas de vérifier le mot de passe. Ouvrez la page dans Chrome, Edge ou Firefox à jour."; return; }
+
+  const nom = $("#loginNom").value.trim().replace(/\s+/g, " ");
+  const pwd = $("#loginPwd").value;
+  const btn = $("#loginGo");
+
+  btn.disabled = true; btn.textContent = "Vérification…";
+  try {
+    const u = findAccount(nom);
+    // On dérive même si le compte n'existe pas : le temps de réponse ne
+    // révèle pas si le nom est connu ou non.
+    const salt = u ? u.salt : "00000000000000000000000000000000";
+    const hash = await derive(pwd, salt, u ? u.iter : ITER);
+    if (u && sameHash(hash, u.hash)) {
+      $("#loginPwd").value = "";
+      ouvrirSession(u.nom);
+    } else {
+      err.textContent = "Nom ou mot de passe incorrect.";
+    }
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = "La vérification a échoué. Réessayez.";
+  } finally {
+    btn.disabled = false; btn.textContent = "Entrer";
+  }
+});
+
+/* --- Ouverture / fermeture de session --- */
+function ouvrirSession(nom) {
+  me = nom;
+  session.set(SKEY, nom);
+  disque.set(UKEY, nom);
+  document.body.classList.remove("locked");
+  buildWho();
+  majRole();
+  syncControls();
+  renderAll();
+}
+function fermerSession() {
+  session.del(SKEY);
+  me = "";
+  document.body.classList.add("locked");
+  $("#loginPwd").value = "";
+  $("#loginNom").value = disque.get(UKEY) || "";
+  closeDrawer(); closeModal(); closeData();
+  majPortail();
+}
+$("#btnLogout").addEventListener("click", fermerSession);
+
+/* Prépare le portail : nom pré-rempli, onglet adapté à l'état du navigateur */
+function majPortail() {
+  const aucun = accounts().length === 0;
+  $("#lockNone").hidden = !aucun;
+  $("#loginNom").value = disque.get(UKEY) || "";
+  showTab(aucun ? "signup" : "login");
+  paintRules();
+}
+
+/* ======================= Démarrage ======================= */
+function renderAll() { renderKPI(); renderStatuts(); renderPrieres(); renderBars(); renderMap(); renderList(); }
+
+/* Le navigateur refuse d'écrire : on prévient plutôt que de laisser croire
+   que les saisies sont enregistrées. */
+if (!disque.persistant) {
+  const bar = el("div", "warnbar");
+  bar.innerHTML = "⚠ <b>Ce navigateur bloque l'enregistrement local.</b> Vous pouvez tout consulter et tester, mais vos ajouts disparaîtront à la fermeture de l'onglet.";
+  document.body.insertBefore(bar, document.body.firstChild);
+}
+
+DB = load();
+buildWho();
+
+const sessionEnCours = session.get(SKEY);
+if (sessionEnCours && findAccount(sessionEnCours)) {
+  ouvrirSession(findAccount(sessionEnCours).nom);
+} else {
+  majPortail();
+}
+</script>
+</body>
+</html>
