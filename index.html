@@ -516,6 +516,7 @@ header.top {
 @keyframes turn { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
 .boot .err { text-align:left; margin-top:14px; }
+.boot-actions { display:flex; gap:9px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
 .boot code { background: var(--surface-2); padding:2px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
 </style>
 </head>
@@ -1646,13 +1647,23 @@ async function chargerProfils() {
   }
 }
 
+/* Une requête qui ne revient jamais laisserait la page en attente muette :
+   on borne l'attente pour transformer le blocage en message lisible. */
+function avecDelai(promesse, secondes, quoi) {
+  return Promise.race([
+    promesse,
+    new Promise((_, rejeter) =>
+      setTimeout(() => rejeter(new Error(`${quoi} : pas de réponse après ${secondes} s`)), secondes * 1000))
+  ]);
+}
+
 async function chargerTout() {
-  const [v, m, c, p] = await Promise.all([
+  const [v, m, c, p] = await avecDelai(Promise.all([
     sb.from("villes").select("*"),
     sb.from("membres").select("*"),
     sb.from("commentaires").select("*"),
     sb.from("prieres").select("*")
-  ]);
+  ]), 10, "Chargement des données");
   const souci = [v, m, c, p].find(r => r.error);
   if (souci) throw new Error(souci.error.message);
   ETAT.villes = v.data || [];
@@ -1731,11 +1742,39 @@ function afficherApp(oui) {
   document.querySelector(".wrap").hidden = !oui;
 }
 
-function panne(titre, detail) {
-  $("#boot").hidden = false;
-  $("#boot").querySelector(".spin").style.display = "none";
-  $("#boot").querySelector("h2").textContent = titre;
+function panne(titre, detail, secours) {
+  const boot = $("#boot");
+  boot.hidden = false;
+  boot.querySelector(".spin").style.display = "none";
+  boot.querySelector("h2").textContent = titre;
   $("#bootMsg").innerHTML = detail;
+
+  if (boot.querySelector(".boot-actions")) return;
+  const zone = el("div", "boot-actions");
+
+  const recharger = el("button", "btn", "Recharger la page");
+  recharger.type = "button";
+  recharger.addEventListener("click", () => location.reload());
+  zone.appendChild(recharger);
+
+  /* Une session enregistrée corrompue bloque au démarrage sans que
+     l'utilisateur puisse rien faire : on lui donne de quoi repartir à zéro. */
+  if (secours) {
+    const vider = el("button", "btn primary", "Se déconnecter et réessayer");
+    vider.type = "button";
+    vider.addEventListener("click", async () => {
+      vider.disabled = true;
+      try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith("sb-"))
+          .forEach(k => localStorage.removeItem(k));
+      } catch (e) {}
+      location.reload();
+    });
+    zone.appendChild(vider);
+  }
+  boot.querySelector(".boot-inner").appendChild(zone);
 }
 
 async function demarrer() {
@@ -1752,44 +1791,63 @@ async function demarrer() {
 
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  sb.auth.onAuthStateChange(async (event, sessionAuth) => {
+  /* ATTENTION — supabase-js détient un verrou pendant l'exécution de ce
+     callback. Toute requête Supabase lancée directement ici attendrait ce
+     même verrou : blocage définitif, écran de chargement sans fin.
+     On sort donc de la pile d'appel avant de toucher à la base. */
+  sb.auth.onAuthStateChange((event, sessionAuth) => {
+    setTimeout(() => appliquerSession(sessionAuth), 0);
+  });
+
+  /* Secours : si aucun événement d'authentification n'est arrivé au bout de
+     4 secondes, on interroge la session nous-mêmes. */
+  setTimeout(async () => {
+    if (sessionTraitee) return;
+    try {
+      const { data } = await sb.auth.getSession();
+      appliquerSession(data.session);
+    } catch (e) {
+      panne("Serveur injoignable", "Détail : <code>" + escapeHtml(e.message) + "</code>");
+    }
+  }, 4000);
+}
+
+let sessionTraitee = false;
+let chargementEnCours = false;
+
+async function appliquerSession(sessionAuth) {
+  if (chargementEnCours) return;
+  chargementEnCours = true;
+  sessionTraitee = true;
+  try {
     if (sessionAuth && sessionAuth.user) {
-      try {
-        moi = { id: sessionAuth.user.id, nom: sessionAuth.user.email, role: "membre" };
-        await chargerTout();
-        const p = ETAT.profils.find(x => x.id === moi.id);
-        if (p) moi = { id: p.id, nom: p.nom, role: p.role };
-        afficherApp(true);
-        majRole();
-        syncControls();
-        renderAll();
-        ecouter();
-      } catch (e) {
-        panne("Base inaccessible", "Détail : <code>" + escapeHtml(e.message) + "</code>");
-      }
+      moi = { id: sessionAuth.user.id, nom: sessionAuth.user.email, role: "membre" };
+      await chargerTout();
+      const p = ETAT.profils.find(x => x.id === moi.id);
+      if (p) moi = { id: p.id, nom: p.nom, role: p.role };
+      afficherApp(true);
+      majRole();
+      syncControls();
+      renderAll();
+      ecouter();
     } else {
       moi = null;
       if (canal) { sb.removeChannel(canal); canal = null; }
       afficherApp(false);
       showTab("login");
     }
-  });
-
-  try {
-    const { data } = await sb.auth.getSession();
-    if (!data.session) { afficherApp(false); showTab("login"); }
   } catch (e) {
-    panne("Serveur injoignable", "Détail : <code>" + escapeHtml(e.message) + "</code>");
+    panne("Base inaccessible", "Détail : <code>" + escapeHtml(e.message) + "</code>", true);
+  } finally {
+    chargementEnCours = false;
   }
 }
 
-/* Filet de sécurité : l'écran de chargement ne doit jamais tourner sans fin.
-   Passé 12 secondes sans avoir rien affiché, on le dit plutôt que de laisser
-   l'utilisateur devant une roue qui tourne. */
+/* Filet de sécurité : l'écran de chargement ne doit jamais tourner sans fin. */
 setTimeout(() => {
   if (!$("#boot").hidden && $("#boot").querySelector(".spin").style.display !== "none") {
     panne("Connexion trop longue",
-      "La base ne répond pas. Vérifiez votre connexion Internet, puis rechargez la page (Ctrl + Maj + R).");
+      "La base n'a pas répondu. Cela vient souvent d'une session enregistrée devenue invalide.", true);
   }
 }, 12000);
 
