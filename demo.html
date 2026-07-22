@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TEAMS MBOCK — Tableau de bord de l'équipe</title>
+<title>TEAMS MBOCK — Tableau de bord des membres</title>
 <style>
 /* ---------- Tokens ---------- */
 :root {
@@ -478,54 +478,12 @@ body:not(.locked) .lock { display:none; }
   .kpis { grid-template-columns: 1fr; }
   .brandmark p { display:none; }
 }
-
-
-/* ---------- Ajouts de la version connectée ---------- */
-.live {
-  display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:550;
-  padding:3px 10px 3px 8px; border-radius:999px; white-space:nowrap;
-  background: var(--surface-2); color: var(--ink-2); border:1px solid var(--border);
-}
-.live i { width:7px; height:7px; border-radius:50%; background: var(--muted); flex:none; }
-.live.on i { background: var(--good); box-shadow:0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); }
-.live.off i { background: var(--critical); }
-.live.wait i { background: var(--warning); }
-
-#toasts { position:fixed; right:16px; bottom:16px; z-index:500; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
-.toast {
-  background: var(--surface); border:1px solid var(--border); border-left:3px solid var(--brand);
-  border-radius:11px; box-shadow: var(--shadow); padding:10px 14px; font-size:13px;
-  max-width:320px; animation: pop .2s ease both;
-}
-.toast b { font-weight:600; }
-@keyframes pop { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
-@media (prefers-reduced-motion: reduce) { .toast { animation:none; } }
-
-.boot { position:fixed; inset:0; display:grid; place-items:center; background: var(--plane); z-index:350; padding:24px; }
-.boot-inner { text-align:center; max-width:460px; }
-.boot h2 { font-size:17px; margin-bottom:6px; }
-.boot p { font-size:13.5px; color:var(--muted); margin:0; line-height:1.55; }
-.spin {
-  width:26px; height:26px; margin:0 auto 16px; border-radius:50%;
-  border:2.5px solid var(--grid); border-top-color: var(--brand); animation: turn .7s linear infinite;
-}
-@keyframes turn { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
-.boot .err { text-align:left; margin-top:14px; }
-.boot code { background: var(--surface-2); padding:2px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
 </style>
 </head>
-<body>
-<div class="boot" id="boot">
-  <div class="boot-inner">
-    <div class="spin"></div>
-    <h2>Connexion à la base de l'équipe…</h2>
-    <p id="bootMsg">Chargement des membres, commentaires et sujets de prière.</p>
-  </div>
-</div>
+<body class="locked">
 
 <!-- ===================== Portail d'accès ===================== -->
-<div class="lock" id="lock" hidden>
+<div class="lock" id="lock">
   <div class="lock-card">
     <div class="lock-brand">
       <div class="logo">TM</div>
@@ -536,49 +494,56 @@ body:not(.locked) .lock { display:none; }
     </div>
 
     <div class="tabs" role="tablist">
-      <button class="tab on" id="tabLogin"  type="button" role="tab">J'ai déjà un compte</button>
-      <button class="tab"    id="tabSignup" type="button" role="tab">Créer mon compte</button>
+      <button class="tab on" id="tabLogin"  type="button" role="tab">J'ai déjà un accès</button>
+      <button class="tab"    id="tabSignup" type="button" role="tab">Créer mon accès</button>
     </div>
 
+    <!-- Connexion -->
     <form id="loginForm" class="lock-form">
-      <label class="inp"><span>Adresse e-mail</span>
-        <input id="loginMail" type="email" autocomplete="email" placeholder="vous@exemple.com" required>
+      <label class="inp"><span>Votre nom</span>
+        <input id="loginNom" list="dlNoms" autocomplete="username" placeholder="Prénom Nom" required>
       </label>
       <label class="inp"><span>Mot de passe</span>
-        <input id="loginPwd" type="password" autocomplete="current-password" required>
+        <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••.mbock" required>
       </label>
       <div class="err" id="loginErr"></div>
       <button class="btn primary lock-go" type="submit" id="loginGo">Entrer</button>
+      <p class="lock-none" id="lockNone" hidden>Aucun accès n'existe encore sur ce navigateur. Commencez par <b>Créer mon accès</b>.</p>
     </form>
 
+    <!-- Création -->
     <form id="signupForm" class="lock-form" hidden>
-      <label class="inp"><span>Prénom et nom</span>
-        <input id="suNom" autocomplete="name" placeholder="Prénom Nom" required>
-        <span class="su-super" id="suSuper" hidden>✓ Nom de l'administrateur principal.</span>
-      </label>
-      <label class="inp"><span>Adresse e-mail</span>
-        <input id="suMail" type="email" autocomplete="email" placeholder="vous@exemple.com" required>
+      <label class="inp"><span>Votre nom</span>
+        <input id="suNom" list="dlNoms" autocomplete="username" placeholder="Prénom Nom" required>
+        <span class="su-super" id="suSuper" hidden>✓ Nom reconnu : vous serez l'administrateur principal.</span>
       </label>
       <label class="inp"><span>Mot de passe</span>
-        <input id="suPwd" type="password" autocomplete="new-password" required>
+        <input id="suPwd" type="password" autocomplete="new-password" placeholder="••••••••.mbock" required>
       </label>
+      <label class="inp"><span>Confirmer le mot de passe</span>
+        <input id="suPwd2" type="password" autocomplete="new-password" required>
+      </label>
+
       <ul class="rules" id="rules">
-        <li data-rule="len"><i></i>Au moins 8 caractères</li>
+        <li data-rule="suffix"><i></i>Se termine par <code>.mbock</code></li>
+        <li data-rule="len"><i></i>Au moins 6 caractères <b>avant</b> <code>.mbock</code></li>
         <li data-rule="mix"><i></i>Mélange lettres et chiffres</li>
+        <li data-rule="match"><i></i>Les deux saisies sont identiques</li>
       </ul>
+
       <div class="err" id="suErr"></div>
-      <button class="btn primary lock-go" type="submit" id="suGo">Créer mon compte</button>
+      <button class="btn primary lock-go" type="submit" id="suGo">Créer mon accès</button>
     </form>
 
     <p class="lock-note">
-      <b>Base partagée.</b> Vos ajouts sont visibles immédiatement par toute l'équipe,
-      dans toutes les villes. Les mots de passe sont vérifiés par le serveur et ne
-      transitent jamais en clair ; personne ne peut lire les données sans compte.
+      <b>À savoir.</b> Ce tableau de bord fonctionne sans serveur : votre mot de passe n'est jamais stocké en clair
+      (PBKDF2-SHA256), mais il protège l'entrée de la page, pas le fichier lui-même. Ne mettez pas ici
+      d'information que vous ne confieriez pas à toute personne ayant accès à cet ordinateur.
     </p>
   </div>
 </div>
 
-<header class="top" hidden>
+<header class="top">
   <div class="top-inner">
     <div class="brandmark">
       <div class="logo">TM</div>
@@ -587,8 +552,6 @@ body:not(.locked) .lock { display:none; }
         <p>Suivi des membres &amp; des sorties d'évangélisation</p>
       </div>
     </div>
-
-    <span class="live wait" id="live" title="État de la liaison temps réel"><i></i><span id="liveTxt">Liaison…</span></span>
 
     <div class="who">
       <span class="who-av" id="meAv">?</span>
@@ -610,7 +573,7 @@ body:not(.locked) .lock { display:none; }
   </div>
 </header>
 
-<div class="wrap" hidden>
+<div class="wrap">
 
   <section class="kpis">
     <div class="kpi">
@@ -629,9 +592,9 @@ body:not(.locked) .lock { display:none; }
       <div class="k-sub" id="kpiRelanceSub">—</div>
     </div>
     <div class="kpi">
-      <div class="k-label">Sujets de prière</div>
-      <div class="k-value" id="kpiPriere">—</div>
-      <div class="k-sub" id="kpiPriereSub">—</div>
+      <div class="k-label">Commentaires</div>
+      <div class="k-value" id="kpiComm">—</div>
+      <div class="k-sub" id="kpiCommSub">—</div>
     </div>
   </section>
 
@@ -651,18 +614,14 @@ body:not(.locked) .lock { display:none; }
         <h2>Membres par ville</h2>
         <span class="hint">Survolez une barre</span>
       </div>
-      <p class="panel-sub">Barre pleine : membres enregistrés. Trait clair : effectif recensé restant à saisir.</p>
-      <div class="legend">
-        <span><i class="swatch" style="background:var(--brand)"></i> Enregistrés</span>
-        <span><i class="swatch" style="background:var(--brand-soft)"></i> Restant à saisir</span>
-      </div>
+      <p class="panel-sub">Cliquez une ville pour n'afficher qu'elle dans la liste ci-dessous.</p>
       <div class="bars" id="bars"></div>
     </div>
 
     <div class="panel">
       <div class="panel-head">
         <h2>Carte de l'équipe</h2>
-        <span class="hint">Taille = membres</span>
+        <span class="hint">Taille = effectif</span>
       </div>
       <p class="panel-sub">Positions réelles des villes (WGS84) ; fond de carte schématique.</p>
       <div class="map-holder"><svg id="mapSvg" viewBox="0 0 400 400" role="img" aria-label="Carte de répartition des membres en France"></svg></div>
@@ -704,15 +663,21 @@ body:not(.locked) .lock { display:none; }
 
   <p class="note">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
-    <span><b>Base partagée en temps réel.</b> Tout ce que vous ajoutez apparaît immédiatement chez les autres membres de l'équipe, dans toutes les villes. Les effectifs de référence des 22 villes proviennent du fichier <i>Liste des membres de l'équipe Mbock.xlsx</i>.</span>
+    <span><b>Jeu de test.</b> Les 22 villes, leurs effectifs et leurs coordonnées viennent du fichier <i>Liste des membres de l'équipe Mbock.xlsx</i>. Les <b>152 fiches nominatives sont générées au hasard</b> (noms fictifs) pour remplir chaque ville à son effectif réel — remplacez-les par les vrais membres. Tout est enregistré dans ce navigateur (<i>localStorage</i>) : les administrateurs peuvent sauvegarder ou transmettre l'ensemble via <b>Données ▸ Exporter</b>.</span>
   </p>
 </div>
 
+<!-- Noms des membres, partagés par le portail et la nomination d'admins.
+     Hors de tout conteneur masqué, pour que l'auto-complétion reste active. -->
 <datalist id="dlNoms"></datalist>
+
+<!-- Tooltip -->
 <div id="tip"></div>
-<div id="toasts"></div>
+
+<!-- Scrim -->
 <div class="scrim" id="scrim"></div>
 
+<!-- Drawer -->
 <aside class="drawer" id="drawer" aria-hidden="true">
   <div class="drawer-head">
     <div style="flex:1;min-width:0">
@@ -730,9 +695,10 @@ body:not(.locked) .lock { display:none; }
   </form>
 </aside>
 
+<!-- Modal: ajout membre -->
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <h2 id="modalTitle">Ajouter un nouveau membre</h2>
-  <p class="m-hint">Rencontré lors d'une sortie ? Enregistrez-le : toute l'équipe le verra aussitôt.</p>
+  <p class="m-hint">Rencontré lors d'une sortie ? Enregistrez-le ici pour que l'équipe de sa ville puisse le suivre.</p>
   <form id="addForm">
     <div class="form-grid">
       <label class="inp"><span>Prénom *</span><input name="prenom" required autocomplete="off"></label>
@@ -753,119 +719,365 @@ body:not(.locked) .lock { display:none; }
     <div class="err" id="addErr"></div>
     <div class="modal-foot">
       <button class="btn ghost" type="button" id="addCancel">Annuler</button>
-      <button class="btn primary" type="submit" id="addGo">Enregistrer</button>
+      <button class="btn primary" type="submit">Enregistrer</button>
     </div>
   </form>
 </div>
 
+<!-- Modal: données -->
 <div class="modal" id="dataModal" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
   <h2 id="dataTitle">Données</h2>
-  <p class="m-hint">La base est partagée : ces exports sont des photographies de l'état actuel.</p>
+  <p class="m-hint">Les données vivent dans ce navigateur. Exportez pour sauvegarder ou transmettre à un autre responsable.</p>
 
   <div style="display:grid;gap:9px" id="dataTools">
     <button class="btn" id="btnExport">⬇ Exporter en JSON (sauvegarde complète)</button>
     <button class="btn" id="btnExportCsv">⬇ Exporter les membres en CSV (Excel)</button>
+    <button class="btn" id="btnImport">⬆ Importer une sauvegarde JSON</button>
+    <button class="btn" id="btnReset">↺ Réinitialiser avec les données de test</button>
+    <input type="file" id="fileIn" accept="application/json" hidden>
   </div>
   <p class="denied" id="dataDenied" hidden>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-    <span>L'export des fichiers est réservé aux administrateurs. Rapprochez-vous de <b id="denyWho">l'administrateur principal</b>.</span>
+    <span>L'export et l'import des fichiers sont réservés aux administrateurs. Rapprochez-vous de <b id="denyWho">l'administrateur principal</b>.</span>
   </p>
 
-  <h2 style="font-size:15px;margin:22px 0 2px">Mon compte</h2>
+  <h2 style="font-size:15px;margin:22px 0 2px">Mon accès</h2>
   <p class="m-hint" id="accCount">—</p>
+  <div style="display:grid;gap:9px">
+    <button class="btn" id="btnPwd">🔑 Changer mon mot de passe</button>
+  </div>
 
   <div id="adminPanel" hidden>
     <h2 style="font-size:15px;margin:22px 0 2px">Administrateurs <span class="pill" id="adminCount"></span></h2>
-    <p class="m-hint">Vous êtes l'administrateur principal : vous seul nommez les autres administrateurs, parmi les personnes ayant créé un compte.</p>
+    <p class="m-hint">Vous êtes l'administrateur principal : vous seul pouvez nommer ou retirer les autres administrateurs.</p>
     <div id="adminRows"></div>
+    <div class="adm-add">
+      <input id="admNom" list="dlNoms" autocomplete="off" placeholder="Nom de la personne à nommer">
+      <button class="btn primary" id="btnNameAdmin" type="button">Nommer</button>
+    </div>
+    <p class="m-hint" id="admFull" hidden>Les 4 places d'administrateur sont prises. Retirez quelqu'un pour en nommer un autre.</p>
+    <div style="display:grid;gap:9px;margin-top:12px">
+      <button class="btn" id="btnWipeAcc">⚠ Supprimer tous les accès de ce navigateur</button>
+    </div>
   </div>
 
   <div class="modal-foot"><button class="btn ghost" id="dataClose">Fermer</button></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 "use strict";
 
 /* =======================================================================
-   TEAMS MBOCK — version connectée
-   Les données vivent dans Supabase (Postgres). Chaque navigateur ouvert
-   reçoit les changements des autres en temps réel, sans rafraîchir.
+   Données de référence — issues de "Liste des membres de l'équipe Mbock.xlsx"
+   (colonne x = latitude, colonne y = longitude)
    ======================================================================= */
-const SUPABASE_URL = "https://hqbgnlqimpujsmazyrpk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_lsllBu7kh82WZx1msMGDLg_wIu6NmQQ";
+const SEED_CITIES = [
+  { nom:"Grenoble",        lat:45.1842335, lon:5.71554,    effectif:40 },
+  { nom:"Lyon",            lat:45.7579507, lon:4.8351239,  effectif:21 },
+  { nom:"Marseille",       lat:43.280339,  lon:5.3806376,  effectif:15 },
+  { nom:"IDF",             lat:48.6807825, lon:2.5026637,  effectif:12 },
+  { nom:"Bordeaux",        lat:44.8637178, lon:-0.5860121, effectif:9  },
+  { nom:"Aix en Provence", lat:43.5360054, lon:5.3879121,  effectif:9  },
+  { nom:"Nancy",           lat:48.6880574, lon:6.1734322,  effectif:8  },
+  { nom:"Annemasse",       lat:46.1890335, lon:6.2476091,  effectif:7  },
+  { nom:"Valence",         lat:44.9234167, lon:4.9163851,  effectif:6  },
+  { nom:"Dijon",           lat:47.3318698, lon:5.0322191,  effectif:6  },
+  { nom:"Lille",           lat:50.6310806, lon:3.0468401,  effectif:4  },
+  { nom:"Nice",            lat:43.7031953, lon:7.252812,   effectif:3  },
+  { nom:"Strasbourg",      lat:48.5690969, lon:7.7620787,  effectif:2  },
+  { nom:"Compiegne",       lat:49.4006159, lon:2.8546645,  effectif:2  },
+  { nom:"Rennes",          lat:48.1159343, lon:-1.6884477, effectif:1  },
+  { nom:"Poitiers",        lat:46.5846304, lon:0.3714621,  effectif:1  },
+  { nom:"Nimes",           lat:43.8321558, lon:4.3428586,  effectif:1  },
+  { nom:"Nevers",          lat:46.9852047, lon:3.1597652,  effectif:1  },
+  { nom:"Montpellier",     lat:43.6100081, lon:3.8741693,  effectif:1  },
+  { nom:"Laval",           lat:48.0577943, lon:-0.7691828, effectif:1  },
+  { nom:"Chambery",        lat:45.5822346, lon:5.9063526,  effectif:1  },
+  { nom:"Angers",          lat:47.481896,  lon:-0.5629347, effectif:1  }
+];
 
-const SUPER_ADMIN = "Désiré KENY";
-const MAX_ADMINS  = 4;
+/* -----------------------------------------------------------------------
+   Jeu de test : les 152 membres sont générés au hasard, ville par ville,
+   pour respecter exactement l'effectif recensé de chaque ville.
+   Noms 100 % fictifs — à remplacer par les vrais via l'import JSON/CSV.
+   ----------------------------------------------------------------------- */
+const PRENOMS = [
+  "Grâce","Emmanuel","Sarah","Jonathan","Esther","David","Ruth","Samuel","Myriam","Josué",
+  "Déborah","Nathan","Priscille","Élie","Anna","Timothée","Rebecca","Paul","Lydie","Isaac",
+  "Marthe","Daniel","Naomi","Joseph","Rachel","Simon","Judith","Ézéchiel","Sephora","Aaron",
+  "Bénédicte","Gabriel","Sandrine","Christian","Aurélie","Franck","Nadège","Hervé","Céline","Boris",
+  "Prisca","Cédric","Laetitia","Yannick","Sonia","Olivier","Carine","Bertrand","Estelle","Guy",
+  "Michelle","Ferdinand","Josiane","Landry","Solange","Armel","Viviane","Ulrich","Clarisse","Serge",
+  "Christelle","Patrick","Larissa","Éric","Danielle","Alain","Blandine","Hugues","Sylvie","Marc"
+];
+const NOMS = [
+  "Ntonga","Rivière","Mendy","Fouda","Kamga","Nguéma","Belinga","Lefèvre","Tchoua","Etoundi",
+  "Manga","Essomba","Abanda","Mvondo","Ngo Bassong","Kouam","Djoumessi","Ateba","Moreau","Mbarga",
+  "Bertrand","Ondoua","Nkodo","Girard","Tsala","Bilong","Mercier","Bakari","Eyenga","Diallo",
+  "Simo","Ngoumou","Dubois","Nana","Owona","Faure","Mbida","Sow","Tchinda","Lambert",
+  "Zambo","Ngassa","Perrin","Ekani","Toko","Renard","Mballa","Cissé","Ngono","Roussel",
+  "Fotso","Bassong","Leroy","Mimbang","Ndongo","Chevalier","Kenfack","Traoré","Meyong","Barbier",
+  "Njoya","Amougou","Colin","Ebode","Sanou","Payet","Mengue","Bamba","Tiam","Garnier"
+];
+const CONTEXTES = [
+  "Rencontré lors de la sortie du samedi en centre-ville.",
+  "Sortie campus : a accepté de recevoir une Bible.",
+  "Contact donné par un membre de la famille.",
+  "Rencontré à la sortie du marché, a demandé la prière.",
+  "Sortie porte-à-porte dans le quartier.",
+  "Invité par un ami déjà dans le groupe.",
+  "Croisé lors de l'action de rue devant la gare.",
+  "Étudiant(e), disponible surtout le week-end.",
+  "Vient d'emménager dans la ville, cherche une église locale.",
+  "A répondu à l'invitation distribuée pendant la sortie.",
+  "Rencontré au parc pendant l'évangélisation de l'après-midi.",
+  "Participe au groupe de maison depuis peu.",
+  "A donné sa vie au Seigneur pendant la sortie.",
+  "Ancien contact repris cette année.",
+  "Amené par un collègue de travail.",
+  "Rencontré à la sortie de la fac, très ouvert au dialogue."
+];
+const COMMENTAIRES = [
+  "Contact pris cette semaine, tout va bien de son côté.",
+  "A demandé une Bible en français simple — je lui en apporte une dimanche.",
+  "Était au culte dimanche, pose des questions sur le baptême.",
+  "Injoignable depuis quelques semaines, quelqu'un le connaît personnellement ?",
+  "Vient à la prochaine sortie, je l'inscris sur la liste.",
+  "A rejoint le groupe de maison du mardi soir.",
+  "Sujet de prière : recherche d'emploi.",
+  "Déménage bientôt, à transférer vers l'équipe de sa nouvelle ville.",
+  "Belle progression, prêt(e) à servir dans l'accueil.",
+  "Rappel effectué, il/elle reprend contact après les vacances.",
+  "A participé à sa première sortie d'évangélisation, très motivé(e).",
+  "Merci de le/la mettre en binôme avec un(e) ancien(ne) du groupe.",
+  "Malade cette semaine, pensons à lui/elle dans la prière.",
+  "A invité deux amis au culte de dimanche dernier.",
+  "Ne répond plus aux messages, je tente un appel ce week-end.",
+  "Point de suivi fait : tout est clair sur les rendez-vous du groupe."
+];
+
+const SUJETS_PRIERE = [
+  "Recherche d'emploi",
+  "Santé de sa maman restée au pays",
+  "Réussite aux examens de fin d'année",
+  "Régularisation de sa situation administrative",
+  "Trouver un logement plus proche du travail",
+  "Paix et réconciliation dans son foyer",
+  "Croissance spirituelle et persévérance",
+  "Guérison complète après son opération",
+  "Sagesse pour une décision importante",
+  "Le retour de son frère à l'église",
+  "Son projet de mariage",
+  "Force pour tenir dans ses études",
+  "Ouverture de porte pour son projet",
+  "Protection pour sa famille au pays",
+  "Libération de ses dettes",
+  "Un travail stable pour son conjoint"
+];
+
+/* PRNG déterministe : le jeu de test est toujours identique d'un poste à l'autre */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ======================= Stockage ======================= */
+/* Certains contextes (navigation privée, iframe restreinte, cookies bloqués)
+   refusent localStorage : plutôt que de planter, on bascule sur une mémoire
+   volatile. Le tableau de bord reste utilisable, mais rien n'est conservé
+   après fermeture — l'utilisateur en est averti au premier chargement. */
+function coffre(source) {
+  const mem = Object.create(null);
+  let natif = null;
+  try {
+    natif = source();
+    const t = "__test_teams_mbock__";
+    natif.setItem(t, "1");
+    natif.removeItem(t);
+  } catch (e) { natif = null; }
+
+  return {
+    persistant: natif !== null,
+    get(k) { try { return natif ? natif.getItem(k) : (k in mem ? mem[k] : null); } catch (e) { return k in mem ? mem[k] : null; } },
+    set(k, v) { try { natif ? natif.setItem(k, v) : (mem[k] = v); } catch (e) { mem[k] = v; } },
+    del(k) { try { natif ? natif.removeItem(k) : delete mem[k]; } catch (e) { delete mem[k]; } }
+  };
+}
+const disque  = coffre(() => window.localStorage);
+const session = coffre(() => window.sessionStorage);
+
+const KEY  = "teams-mbock-dashboard-v1";
+const UKEY = "teams-mbock-user";
+let DB, me, openId = null, hi = null;
+const filters = { q:"", ville:"", statut:"" };
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+function buildSeed() {
+  const rnd  = mulberry32(20260721);
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+
+  const DAY   = 86400000;
+  const END   = Date.parse("2026-07-21");
+  const START = Date.parse("2024-09-01");
+  const isoOf = ms => new Date(ms).toISOString().slice(0, 10);
+
+  const used = new Set();
+  const uniqueName = () => {
+    for (let i = 0; i < 400; i++) {
+      const p = pick(PRENOMS), n = pick(NOMS);
+      if (!used.has(p + " " + n)) { used.add(p + " " + n); return [p, n]; }
+    }
+    const p = pick(PRENOMS), n = pick(NOMS) + " " + (used.size + 1);
+    used.add(p + " " + n); return [p, n];
+  };
+
+  const members = [];
+  SEED_CITIES.forEach(city => {
+    for (let i = 0; i < city.effectif; i++) {
+      const [prenom, nom] = uniqueName();
+      // distribution biaisée vers le récent : l'équipe gagne des membres en continu
+      const ms = START + Math.pow(rnd(), 0.55) * (END - START);
+      const date = isoOf(ms);
+      const anciennete = Math.floor((END - ms) / DAY);
+
+      // Les rencontres récentes sont logiquement des « Nouveau », les anciennes des « Membre »
+      let statut;
+      const r = rnd();
+      if (anciennete < 45)       statut = r < .70 ? "Nouveau" : "En intégration";
+      else if (anciennete < 150) statut = r < .45 ? "En intégration" : (r < .85 ? "Membre" : "À relancer");
+      else                       statut = r < .72 ? "Membre" : (r < .88 ? "En intégration" : "À relancer");
+
+      members.push({
+        id: uid(), prenom, nom, ville: city.nom, statut,
+        tel:   rnd() < .55 ? "06 " + [0,0,0,0].map(() => String(Math.floor(rnd() * 90) + 10)).join(" ") : "",
+        email: rnd() < .40 ? norm(prenom).replace(/[^a-z]/g, "") + "." + norm(nom).replace(/[^a-z]/g, "") + "@example.fr" : "",
+        date, note: pick(CONTEXTES),
+        ajoutePar: "Import initial", cree: date, comments: [], prieres: []
+      });
+    }
+  });
+
+  // Parrainage : une partie des fiches est attribuée à un membre plus ancien de la même ville
+  members.forEach(m => {
+    if (rnd() < .55) {
+      const aines = members.filter(x => x.ville === m.ville && x.date < m.date);
+      if (aines.length) m.ajoutePar = fullName(aines[Math.floor(rnd() * aines.length)]);
+    }
+  });
+
+  // Commentaires : ~45 fiches en reçoivent 1 à 3, signés par un membre de la même ville
+  members.forEach(m => {
+    if (rnd() > .30) return;
+    const auteurs = members.filter(x => x.ville === m.ville && x.id !== m.id);
+    const n = 1 + Math.floor(rnd() * 3);
+    for (let i = 0; i < n; i++) {
+      const base = Math.max(Date.parse(m.date), END - 150 * DAY);
+      m.comments.push({
+        id: uid(),
+        auteur: auteurs.length ? fullName(auteurs[Math.floor(rnd() * auteurs.length)]) : "Responsable " + m.ville,
+        date: isoOf(base + rnd() * (END - base)),
+        texte: pick(COMMENTAIRES)
+      });
+    }
+  });
+
+  // Sujets de prière : environ une fiche sur deux en porte un ou deux, dont quelques-uns déjà exaucés
+  members.forEach(m => {
+    if (rnd() > .5) return;
+    const dejaVus = [];
+    const n = rnd() < .75 ? 1 : 2;
+    for (let i = 0; i < n; i++) {
+      const texte = pick(SUJETS_PRIERE);
+      if (dejaVus.includes(texte)) continue;
+      dejaVus.push(texte);
+      const base = Math.max(Date.parse(m.date), END - 200 * DAY);
+      const depuis = base + rnd() * (END - base);
+      const exauce = rnd() < .22;
+      m.prieres.push({
+        id: uid(), texte, auteur: m.ajoutePar === "Import initial" ? fullName(m) : m.ajoutePar,
+        date: isoOf(depuis),
+        exauce,
+        dateExauce: exauce ? isoOf(depuis + rnd() * (END - depuis)) : null
+      });
+    }
+  });
+
+  return { version:1, cities: SEED_CITIES.map(c => ({ ...c })), members, admins: [] };
+}
+
+/* Une sauvegarde peut venir d'une version antérieure : on complète les champs
+   ajoutés depuis, plutôt que de la rejeter. */
+function normaliser(p) {
+  if (!Array.isArray(p.admins)) p.admins = [];
+  p.members.forEach(m => {
+    if (!Array.isArray(m.comments)) m.comments = [];
+    if (!Array.isArray(m.prieres))  m.prieres  = [];
+  });
+  return p;
+}
+
+function load() {
+  try {
+    const raw = disque.get(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && Array.isArray(p.members) && Array.isArray(p.cities)) {
+        normaliser(p);   // complète les champs absents des sauvegardes plus anciennes
+        return p;
+      }
+    }
+  } catch (e) { console.warn("Sauvegarde illisible, retour aux données de test.", e); }
+  return buildSeed();
+}
+function save() {
+  try { disque.set(KEY, JSON.stringify(DB)); }
+  catch (e) { alert("Impossible d'enregistrer (stockage du navigateur plein ou bloqué)."); }
+}
 
 /* ======================= Helpers ======================= */
 const $  = s => document.querySelector(s);
 const el = (t, c, txt) => { const n = document.createElement(t); if (c) n.className = c; if (txt != null) n.textContent = txt; return n; };
 const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-const todayISO = () => new Date().toISOString().slice(0, 10);
-const jour = v => (v || "").slice(0, 10);
 const fullName = m => `${m.prenom} ${m.nom}`.trim();
 const initials = m => ((m.prenom[0] || "") + (m.nom[0] || "")).toUpperCase();
-const inits = s => (s || "?").split(/\s+/).map(x => x[0]).slice(0, 2).join("").toUpperCase();
 const statutClass = s => ({ "Nouveau":"nouveau", "En intégration":"integration", "Membre":"membre", "À relancer":"suivi" }[s] || "nouveau");
-const escapeHtml = s => (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 
 function fmtDate(iso) {
-  iso = jour(iso);
   if (!iso) return "—";
   const d = new Date(iso + "T00:00:00");
   if (isNaN(d)) return iso;
   return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" });
 }
 function daysAgo(iso) {
-  const d = new Date(jour(iso) + "T00:00:00");
+  const d = new Date(iso + "T00:00:00");
   if (isNaN(d)) return Infinity;
   return Math.floor((Date.now() - d.getTime()) / 86400000);
 }
+function cityOf(nom) { return DB.cities.find(c => c.nom === nom); }
+function membersOf(nom) { return DB.members.filter(m => m.ville === nom); }
 
-/* ======================= État ======================= */
-const ETAT = { villes: [], membres: [], commentaires: [], prieres: [], profils: [] };
-let moi = null;            // { id, nom, role }
-let sb = null;
-let openId = null, hi = null;
-const filters = { q:"", ville:"", statut:"" };
-
-const commentairesDe = id => ETAT.commentaires.filter(c => c.membre_id === id);
-const prieresDe      = id => ETAT.prieres.filter(p => p.membre_id === id);
-const prieresEnCours = id => prieresDe(id).filter(p => !p.exauce);
-
-const isSuper = nom => norm(nom) === norm(SUPER_ADMIN);
-const monRole = () => (moi && moi.role) || "membre";
-const suisAdmin = () => monRole() === "admin" || monRole() === "super";
-const suisSuper = () => monRole() === "super";
-
-function membresDe(ville) { return ETAT.membres.filter(m => m.ville === ville); }
+/* Villes triées par nombre de fiches réelles (la mesure affichée partout),
+   l'effectif du fichier Excel restant disponible comme référence. */
 function citiesSorted() {
-  const vus = new Set(ETAT.villes.map(v => v.nom));
-  const sup = [...new Set(ETAT.membres.map(m => m.ville))].filter(v => !vus.has(v))
-    .map(nom => ({ nom, lat:null, lon:null, effectif:0 }));
-  return [...ETAT.villes, ...sup]
-    .map(v => ({ ...v, fiches: membresDe(v.nom).length }))
-    .map(v => ({ ...v, total: Math.max(v.effectif || 0, v.fiches) }))
-    .sort((a, b) => b.fiches - a.fiches || b.total - a.total || a.nom.localeCompare(b.nom, "fr"));
+  return DB.cities
+    .map(c => ({ ...c, fiches: membersOf(c.nom).length }))
+    .sort((a, b) => b.fiches - a.fiches || a.nom.localeCompare(b.nom, "fr"));
 }
 
 function filtered() {
   const q = norm(filters.q);
-  return ETAT.membres.filter(m =>
+  return DB.members.filter(m =>
     (!filters.ville  || m.ville === filters.ville) &&
     (!filters.statut || m.statut === filters.statut) &&
     (!q || norm(fullName(m)).includes(q) || norm(m.ville).includes(q) || norm(m.note).includes(q)
-        || prieresDe(m.id).some(p => norm(p.texte).includes(q)))
+        || m.prieres.some(p => norm(p.texte).includes(q)))
   );
-}
-
-/* ======================= Notifications ======================= */
-function toast(html) {
-  const t = el("div", "toast");
-  t.innerHTML = html;
-  $("#toasts").appendChild(t);
-  setTimeout(() => t.remove(), 6000);
 }
 
 /* ======================= Tooltip ======================= */
@@ -894,10 +1106,10 @@ const hideTip = () => tip.classList.remove("show");
 
 /* ======================= Statuts ======================= */
 const STATUTS = [
-  { nom:"Membre",         couleur:"var(--good)" },
-  { nom:"En intégration", couleur:"var(--warning)" },
-  { nom:"Nouveau",        couleur:"var(--brand)" },
-  { nom:"À relancer",     couleur:"var(--critical)" }
+  { nom:"Membre",         cls:"membre",      couleur:"var(--good)" },
+  { nom:"En intégration", cls:"integration", couleur:"var(--warning)" },
+  { nom:"Nouveau",        cls:"nouveau",     couleur:"var(--brand)" },
+  { nom:"À relancer",     cls:"suivi",       couleur:"var(--critical)" }
 ];
 function countByStatut(list) {
   const o = {};
@@ -909,27 +1121,31 @@ function countByStatut(list) {
 /* ======================= KPI ======================= */
 function renderKPI() {
   const cs = citiesSorted();
-  const total = ETAT.membres.length;
-  const nouveaux = ETAT.membres.filter(m => daysAgo(m.cree_le) <= 30).length;
-  const relance = ETAT.membres.filter(m => m.statut === "À relancer").length;
-  const enCours = ETAT.prieres.filter(p => !p.exauce).length;
-  const exauces = ETAT.prieres.length - enCours;
+  const total = DB.members.length;
+  const nouveaux = DB.members.filter(m => daysAgo(m.cree || m.date) <= 30).length;
+  const relance = DB.members.filter(m => m.statut === "À relancer").length;
+  const comments = DB.members.reduce((s, m) => s + m.comments.length, 0);
+  const suivies = DB.members.filter(m => m.comments.length).length;
   const villesActives = cs.filter(c => c.fiches > 0).length;
 
   $("#kpiTotal").textContent = total;
   $("#kpiTotalSub").textContent = `répartis sur ${villesActives} ville${villesActives > 1 ? "s" : ""}`;
+
   $("#kpiNouveaux").textContent = nouveaux;
-  $("#kpiNouveauxSub").textContent = "ajoutés ces 30 derniers jours";
+  $("#kpiNouveauxSub").textContent = "issus des dernières sorties";
+
   $("#kpiRelance").textContent = relance;
   $("#kpiRelanceSub").textContent = relance ? "contacts à recontacter" : "personne à recontacter";
-  $("#kpiPriere").textContent = enCours;
-  $("#kpiPriereSub").textContent = `en cours · ${exauces} exaucé${exauces > 1 ? "s" : ""}`;
+
+  $("#kpiComm").textContent = comments;
+  $("#kpiCommSub").textContent = `sur ${suivies} fiche${suivies > 1 ? "s" : ""} suivie${suivies > 1 ? "s" : ""}`;
 }
 
-/* ======================= Barre des statuts ======================= */
+/* ======================= Barre empilée des statuts ======================= */
 function renderStatuts() {
-  const counts = countByStatut(ETAT.membres);
-  const total = ETAT.membres.length || 1;
+  const counts = countByStatut(DB.members);
+  const total = DB.members.length || 1;
+
   const stack = $("#statutStack");
   stack.innerHTML = "";
   STATUTS.forEach(s => {
@@ -938,11 +1154,16 @@ function renderStatuts() {
     const seg = el("div", "seg");
     seg.style.background = s.couleur;
     seg.style.flex = n;
+    const part = Math.round(n / total * 100);
     if (n / total > .07) seg.appendChild(el("b", null, String(n)));
-    seg.addEventListener("mouseenter", e => showTip(e, s.nom, [["Membres", n], ["Part", Math.round(n / total * 100) + " %"]]));
+    seg.addEventListener("mouseenter", e => showTip(e, s.nom, [["Membres", n], ["Part", part + " %"]]));
     seg.addEventListener("mousemove", moveTip);
     seg.addEventListener("mouseleave", hideTip);
-    seg.addEventListener("click", () => filtrerStatut(s.nom));
+    seg.addEventListener("click", () => {
+      filters.statut = filters.statut === s.nom ? "" : s.nom;
+      syncControls(); renderStatuts(); renderList();
+      $("#list").scrollIntoView({ behavior:"smooth", block:"start" });
+    });
     stack.appendChild(seg);
   });
 
@@ -956,32 +1177,36 @@ function renderStatuts() {
     b.appendChild(sw);
     b.appendChild(el("span", null, s.nom));
     b.appendChild(el("b", null, String(counts[s.nom])));
-    b.addEventListener("click", () => filtrerStatut(s.nom));
+    b.addEventListener("click", () => {
+      filters.statut = filters.statut === s.nom ? "" : s.nom;
+      syncControls(); renderStatuts(); renderList();
+    });
     lg.appendChild(b);
   });
 }
-function filtrerStatut(nom) {
-  filters.statut = filters.statut === nom ? "" : nom;
-  syncControls(); renderStatuts(); renderList();
-  $("#list").scrollIntoView({ behavior:"smooth", block:"start" });
-}
 
 /* ======================= Sujets de prière ======================= */
+const prieresEnCours = m => m.prieres.filter(p => !p.exauce);
+
 function renderPrieres() {
   const host = $("#prayList");
   host.innerHTML = "";
-  const items = [];
-  ETAT.membres.forEach(m => prieresEnCours(m.id).forEach(p => items.push({ m, p })));
-  items.sort((a, b) => (b.p.confie_le || "").localeCompare(a.p.confie_le || ""));
 
-  const exauces = ETAT.prieres.filter(p => p.exauce).length;
+  const items = [];
+  DB.members.forEach(m => prieresEnCours(m).forEach(p => items.push({ m, p })));
+  items.sort((a, b) => (b.p.date || "").localeCompare(a.p.date || ""));
+
+  const exauces = DB.members.reduce((s, m) => s + m.prieres.filter(p => p.exauce).length, 0);
   $("#prayCount").textContent = items.length
-    ? `${items.length} en cours · ${exauces} exaucé${exauces > 1 ? "s" : ""}` : "";
+    ? `${items.length} en cours · ${exauces} exaucé${exauces > 1 ? "s" : ""}`
+    : "";
 
   if (!items.length) {
-    host.appendChild(el("div", "pray-empty", "Aucun sujet de prière en cours. Ouvrez une fiche pour en ajouter un."));
+    host.appendChild(el("div", "pray-empty",
+      "Aucun sujet de prière en cours. Ouvrez une fiche pour en ajouter un."));
     return;
   }
+
   items.forEach(({ m, p }) => {
     const row = el("button", "pray-row");
     row.type = "button";
@@ -989,19 +1214,19 @@ function renderPrieres() {
     const b = el("div", null);
     b.style.minWidth = "0";
     b.appendChild(el("div", "pray-text", p.texte));
-    b.appendChild(el("div", "pr-who", `${fullName(m)} · ${m.ville} · depuis le ${fmtDate(p.confie_le)}`));
+    b.appendChild(el("div", "pr-who", `${fullName(m)} · ${m.ville} · depuis le ${fmtDate(p.date)}`));
     row.appendChild(b);
     row.addEventListener("click", () => openMember(m.id));
     host.appendChild(row);
   });
 }
 
-/* ======================= Graphe ======================= */
+/* ======================= Bar chart ======================= */
 function renderBars() {
   const host = $("#bars");
   host.innerHTML = "";
   const cs = citiesSorted();
-  const max = Math.max(1, ...cs.map(c => c.total));
+  const max = Math.max(1, ...cs.map(c => c.fiches));
 
   cs.forEach(c => {
     const row = el("div", "bar-row" + (hi === c.nom ? " on" : ""));
@@ -1009,42 +1234,38 @@ function renderBars() {
     row.appendChild(el("div", "bar-label", c.nom));
 
     const track = el("div", "bar-track");
-    const wTot = c.total / max * 100, wFill = c.fiches / max * 100;
-    if (c.fiches < c.total) {
-      const rest = el("div", "bar-seg rest");
-      rest.style.left  = `calc(${wFill}% + ${c.fiches > 0 ? 2 : 0}px)`;
-      rest.style.width = `calc(${wTot - wFill}% - ${c.fiches > 0 ? 2 : 0}px)`;
-      track.appendChild(rest);
-    }
     if (c.fiches > 0) {
       const fill = el("div", "bar-seg filled");
-      fill.style.width = wFill + "%";
-      if (c.fiches >= c.total) fill.style.borderRadius = "0 4px 4px 0";
+      fill.style.width = (c.fiches / max * 100) + "%";
       track.appendChild(fill);
     }
     row.appendChild(track);
 
     const val = el("div", "bar-val");
-    val.innerHTML = c.effectif ? `<b>${c.fiches}</b>/${c.total}` : `<b>${c.fiches}</b>`;
+    val.innerHTML = `<b>${c.fiches}</b>`;
     row.appendChild(val);
 
     row.addEventListener("mouseenter", e => {
       hi = c.nom; paintHighlight();
-      const k = countByStatut(membresDe(c.nom));
-      showTip(e, c.nom, [["Enregistrés", c.fiches], ["Effectif recensé", c.effectif || "—"],
-        ...STATUTS.filter(s => k[s.nom]).map(s => [s.nom, k[s.nom]])]);
+      const k = countByStatut(membersOf(c.nom));
+      showTip(e, c.nom, [["Membres", c.fiches], ...STATUTS.filter(s => k[s.nom]).map(s => [s.nom, k[s.nom]])]);
     });
     row.addEventListener("mousemove", moveTip);
     row.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
     row.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
+
     host.appendChild(row);
   });
 }
+
 function paintHighlight() {
-  document.querySelectorAll(".bar-row, .bubble").forEach(n => n.classList.toggle("on", n.dataset.ville === hi));
+  document.querySelectorAll(".bar-row, .bubble").forEach(n => {
+    n.classList.toggle("on", n.dataset.ville === hi);
+  });
 }
 
 /* ======================= Carte ======================= */
+/* Contour schématique de la France métropolitaine (lon, lat) */
 const FR = [
   [2.55,51.09],[1.85,50.95],[1.58,50.87],[1.60,50.72],[1.55,50.22],[1.08,49.93],[0.10,49.49],
   [-0.35,49.35],[-1.10,49.36],[-1.62,49.68],[-1.94,49.72],[-1.60,48.83],[-1.51,48.62],[-2.02,48.65],
@@ -1056,10 +1277,11 @@ const FR = [
   [7.00,47.50],[7.58,47.59],[7.62,48.30],[8.23,48.97],[7.10,49.15],[6.35,49.47],[5.80,49.55],
   [4.87,49.80],[4.23,50.28],[3.66,50.34],[3.15,50.79],[2.55,51.09]
 ];
+
 function renderMap() {
   const svg = $("#mapSvg");
   const W = 400, H = 400, PAD = 16;
-  const K = Math.cos(46.5 * Math.PI / 180);
+  const K = Math.cos(46.5 * Math.PI / 180);           // correction de longitude
   const lons = FR.map(p => p[0]), lats = FR.map(p => p[1]);
   const x0 = Math.min(...lons) * K, x1 = Math.max(...lons) * K;
   const y0 = Math.min(...lats),    y1 = Math.max(...lats);
@@ -1071,12 +1293,13 @@ function renderMap() {
   svg.innerHTML = "";
   const NS = "http://www.w3.org/2000/svg";
   const mk = (t, a) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+
   svg.appendChild(mk("path", { class:"fr-outline", d: FR.map((p, i) => (i ? "L" : "M") + px(p[0]).toFixed(1) + " " + py(p[1]).toFixed(1)).join(" ") + " Z" }));
 
+  // Les villes ajoutées à la main n'ont pas de coordonnées : on ne peut pas les placer
   const cs = citiesSorted().filter(c => typeof c.lat === "number" && typeof c.lon === "number");
   const max = Math.max(1, ...cs.map(c => c.fiches));
   cs.slice().sort((a, b) => b.fiches - a.fiches).forEach(c => {
-    if (!c.fiches) return;
     const r = 3.5 + Math.sqrt(c.fiches / max) * 17;
     const cx = px(c.lon), cy = py(c.lat);
     const b = mk("circle", { class:"bubble", cx:cx.toFixed(1), cy:cy.toFixed(1), r:r.toFixed(1) });
@@ -1089,7 +1312,7 @@ function renderMap() {
     b.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
     b.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
     svg.appendChild(b);
-    if (c.fiches >= 4) {
+    if (c.fiches >= 6) {
       const t = mk("text", { class:"bubble-label", x:(cx + r + 3).toFixed(1), y:(cy + 3).toFixed(1) });
       t.textContent = c.nom;
       svg.appendChild(t);
@@ -1105,12 +1328,8 @@ function renderList() {
   const byCity = new Map();
   res.forEach(m => { if (!byCity.has(m.ville)) byCity.set(m.ville, []); byCity.get(m.ville).push(m); });
 
-  $("#resCount").textContent = `${res.length} membre${res.length > 1 ? "s" : ""} · ${byCity.size} ville${byCity.size > 1 ? "s" : ""}`;
+  $("#resCount").textContent = `${res.length} fiche${res.length > 1 ? "s" : ""} · ${byCity.size} ville${byCity.size > 1 ? "s" : ""}`;
 
-  if (!ETAT.membres.length) {
-    host.appendChild(el("div", "empty", "La base est vide. Cliquez « Nouveau membre » pour enregistrer la première personne."));
-    return;
-  }
   if (!res.length) {
     host.appendChild(el("div", "empty", "Aucun membre ne correspond à cette recherche."));
     return;
@@ -1118,11 +1337,13 @@ function renderList() {
 
   const order = citiesSorted().map(c => c.nom).filter(n => byCity.has(n));
   [...byCity.keys()].forEach(n => { if (!order.includes(n)) order.push(n); });
-  const expandAll = !!(filters.q || filters.ville || filters.statut) || res.length <= 40;
+
+  const expandAll = !!(filters.q || filters.ville || filters.statut);
 
   order.forEach(nom => {
-    const list = byCity.get(nom).slice().sort((a, b) => (b.cree_le || "").localeCompare(a.cree_le || ""));
-    const tous = membresDe(nom);
+    const list = byCity.get(nom).slice().sort((a, b) => (b.cree || b.date || "").localeCompare(a.cree || a.date || ""));
+    const tous = membersOf(nom);
+
     const box = el("div", "city" + (expandAll ? " open" : ""));
 
     const head = el("button", "city-head");
@@ -1131,9 +1352,9 @@ function renderList() {
     head.appendChild(el("span", "city-name", nom));
 
     const meta = el("div", "city-meta");
-    meta.appendChild(el("span", null, list.length === tous.length
-      ? `${tous.length} membre${tous.length > 1 ? "s" : ""}`
-      : `${list.length} sur ${tous.length} membres`));
+    const affiches = list.length === tous.length ? `${tous.length} membre${tous.length > 1 ? "s" : ""}`
+                                                 : `${list.length} sur ${tous.length} membres`;
+    meta.appendChild(el("span", null, affiches));
 
     const k = countByStatut(tous);
     const ms = el("div", "mini-stack");
@@ -1160,23 +1381,24 @@ function renderList() {
 function memberRow(m) {
   const row = el("div", "member");
   row.appendChild(el("div", "avatar", initials(m)));
+
   const main = el("div", "m-main");
   main.appendChild(el("div", "m-name", fullName(m)));
-  main.appendChild(el("div", "m-sub", `${fmtDate(m.date_rencontre)} · ajouté par ${m.ajoute_par}`));
+  const ajout = m.ajoutePar && m.ajoutePar !== "Import initial" ? ` · ajouté par ${m.ajoutePar}` : "";
+  main.appendChild(el("div", "m-sub", `${fmtDate(m.date)}${ajout}`));
   row.appendChild(main);
 
   const right = el("div", "m-right");
-  const nPri = prieresEnCours(m.id).length;
+  const nPri = prieresEnCours(m).length;
   if (nPri) {
     const chip = el("span", "chip-p");
     chip.title = `${nPri} sujet${nPri > 1 ? "s" : ""} de prière en cours`;
     chip.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z"/></svg><span>${nPri}</span>`;
     right.appendChild(chip);
   }
-  const nCom = commentairesDe(m.id).length;
-  if (nCom) {
+  if (m.comments.length) {
     const chip = el("span", "chip-c");
-    chip.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg><span>${nCom}</span>`;
+    chip.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg><span>${m.comments.length}</span>`;
     right.appendChild(chip);
   }
   const b = el("span", "badge " + statutClass(m.statut));
@@ -1184,14 +1406,15 @@ function memberRow(m) {
   b.appendChild(el("span", null, m.statut));
   right.appendChild(b);
   row.appendChild(right);
+
   row.addEventListener("click", () => openMember(m.id));
   return row;
 }
 
-/* ======================= Fiche ======================= */
+/* ======================= Drawer / commentaires ======================= */
 function openMember(id) {
-  const m = ETAT.membres.find(x => x.id === id);
-  if (!m) { closeDrawer(); return; }
+  const m = DB.members.find(x => x.id === id);
+  if (!m) return;
   openId = id;
   $("#dName").textContent = fullName(m);
   $("#dSub").textContent = `${m.ville} · ${m.statut}`;
@@ -1200,9 +1423,16 @@ function openMember(id) {
   body.innerHTML = "";
 
   const ul = el("ul", "meta-list");
-  [["Ville", m.ville], ["Statut", m.statut], ["Rencontré le", fmtDate(m.date_rencontre)],
-   ["Téléphone", m.tel || "—"], ["E-mail", m.email || "—"],
-   ["Ajouté par", m.ajoute_par || "—"], ["Contexte", m.note || "—"]].forEach(([k, v]) => {
+  const rows = [
+    ["Ville", m.ville],
+    ["Statut", m.statut],
+    ["Rencontré le", fmtDate(m.date)],
+    ["Téléphone", m.tel || "—"],
+    ["E-mail", m.email || "—"],
+    ["Ajouté par", m.ajoutePar || "—"],
+    ["Contexte", m.note || "—"]
+  ];
+  rows.forEach(([k, v]) => {
     const li = el("li");
     li.appendChild(el("span", "k", k));
     li.appendChild(el("span", "v", v));
@@ -1211,32 +1441,33 @@ function openMember(id) {
   body.appendChild(ul);
 
   /* --- Sujets de prière --- */
-  const pri = prieresDe(id);
-  const enCours = pri.filter(p => !p.exauce).length;
-  body.appendChild(el("div", "c-head", `Sujets de prière${enCours ? ` (${enCours} en cours)` : ""}`));
+  const enCours = prieresEnCours(m).length;
+  body.appendChild(el("div", "c-head",
+    `Sujets de prière${enCours ? ` (${enCours} en cours)` : ""}`));
 
-  if (!pri.length) {
+  if (!m.prieres.length) {
     body.appendChild(el("div", "pray-empty", "Aucun sujet pour l'instant. Demandez-lui ce qu'il/elle souhaite confier à la prière."));
   } else {
-    pri.slice().sort((a, b) => (a.exauce - b.exauce) || (b.confie_le || "").localeCompare(a.confie_le || ""))
+    m.prieres.slice()
+      .sort((a, b) => (a.exauce - b.exauce) || (b.date || "").localeCompare(a.date || ""))
       .forEach(p => {
         const w = el("div", "pray" + (p.exauce ? " done" : ""));
         const pb = el("div", "pray-body");
         pb.appendChild(el("div", "pray-text", p.texte));
         pb.appendChild(el("div", "pray-meta", p.exauce
-          ? `Exaucé le ${fmtDate(p.exauce_le)} · confié par ${p.auteur}`
-          : `Confié par ${p.auteur} le ${fmtDate(p.confie_le)}`));
+          ? `Exaucé le ${fmtDate(p.dateExauce)} · confié par ${p.auteur}`
+          : `Confié par ${p.auteur} le ${fmtDate(p.date)}`));
         w.appendChild(pb);
+
         const act = el("div", "pray-act");
         const b = el("button", "btn sm", p.exauce ? "Rouvrir" : "Exaucé");
         b.type = "button";
-        b.addEventListener("click", async () => {
-          b.disabled = true;
-          const { error } = await sb.from("prieres")
-            .update({ exauce: !p.exauce, exauce_le: !p.exauce ? todayISO() : null })
-            .eq("id", p.id);
-          b.disabled = false;
-          if (error) return alert("Impossible d'enregistrer : " + error.message);
+        b.addEventListener("click", () => {
+          p.exauce = !p.exauce;
+          p.dateExauce = p.exauce ? todayISO() : null;
+          save();
+          openMember(m.id);
+          renderPrieres();
         });
         act.appendChild(b);
         w.appendChild(act);
@@ -1250,37 +1481,33 @@ function openMember(id) {
   inp.placeholder = "Ajouter un sujet de prière…";
   const btnP = el("button", "btn", "Ajouter");
   btnP.type = "button";
-  const ajouterPriere = async () => {
+  const ajouterPriere = () => {
     const t = inp.value.trim();
     if (!t) return;
-    btnP.disabled = true;
-    const { error } = await sb.from("prieres").insert({
-      membre_id: id, texte: t, auteur: moi.nom, auteur_id: moi.id, confie_le: todayISO()
-    });
-    btnP.disabled = false;
-    if (error) return alert("Impossible d'enregistrer : " + error.message);
-    inp.value = "";
+    m.prieres.push({ id: uid(), texte: t, auteur: me, date: todayISO(), exauce: false, dateExauce: null });
+    save();
+    openMember(m.id);
+    renderPrieres(); renderList();
   };
   btnP.addEventListener("click", ajouterPriere);
   inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ajouterPriere(); } });
   addP.appendChild(inp); addP.appendChild(btnP);
   body.appendChild(addP);
 
-  /* --- Commentaires --- */
-  const coms = commentairesDe(id);
-  const cHead = el("div", "c-head", `Commentaires (${coms.length})`);
+  const cHead = el("div", "c-head", `Commentaires (${m.comments.length})`);
   cHead.style.marginTop = "24px";
   body.appendChild(cHead);
-
-  if (!coms.length) {
+  if (!m.comments.length) {
     body.appendChild(el("div", "empty", "Aucun commentaire. Soyez le premier à donner des nouvelles."));
   } else {
-    coms.slice().sort((a, b) => (b.cree_le || "").localeCompare(a.cree_le || "")).forEach(c => {
+    m.comments.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).forEach(c => {
       const w = el("div", "comment");
-      w.appendChild(el("div", "avatar", inits(c.auteur)));
+      const av = el("div", "avatar");
+      av.textContent = (c.auteur || "?").split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+      w.appendChild(av);
       const cb = el("div", "c-body");
       const meta = el("div", "c-meta");
-      meta.innerHTML = `<b>${escapeHtml(c.auteur)}</b> · ${fmtDate(c.cree_le)}`;
+      meta.innerHTML = `<b>${escapeHtml(c.auteur)}</b> · ${fmtDate(c.date)}`;
       cb.appendChild(meta);
       cb.appendChild(el("div", "c-text", c.texte));
       w.appendChild(cb);
@@ -1292,6 +1519,7 @@ function openMember(id) {
   $("#drawer").setAttribute("aria-hidden", "false");
   $("#scrim").classList.add("show");
 }
+const escapeHtml = s => (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 
 function closeDrawer() {
   openId = null;
@@ -1300,19 +1528,18 @@ function closeDrawer() {
   if (!$("#modal").classList.contains("show") && !$("#dataModal").classList.contains("show")) $("#scrim").classList.remove("show");
 }
 
-$("#cForm").addEventListener("submit", async e => {
+$("#cForm").addEventListener("submit", e => {
   e.preventDefault();
   const txt = $("#cText").value.trim();
   if (!txt || !openId) return;
-  const btn = e.target.querySelector("button");
-  btn.disabled = true;
-  const { error } = await sb.from("commentaires").insert({
-    membre_id: openId, texte: txt, auteur: moi.nom, auteur_id: moi.id
-  });
-  btn.disabled = false;
-  if (error) return alert("Impossible de publier : " + error.message);
+  if (!me) { fermerSession(); return; }
+  const m = DB.members.find(x => x.id === openId);
+  m.comments.push({ id: uid(), auteur: me, date: todayISO(), texte: txt });
+  save();
   $("#cText").value = "";
   $("#cText").style.height = "auto";
+  openMember(openId);
+  renderKPI(); renderList();
 });
 $("#cText").addEventListener("input", e => {
   e.target.style.height = "auto";
@@ -1321,10 +1548,13 @@ $("#cText").addEventListener("input", e => {
 
 /* ======================= Ajout d'un membre ======================= */
 function openModal() {
+  if (!me) { fermerSession(); return; }
   const sel = $("#addVille");
   sel.innerHTML = "";
   citiesSorted().forEach(c => sel.appendChild(new Option(c.nom, c.nom)));
   sel.appendChild(new Option("+ Nouvelle ville…", "__new"));
+  const meMember = DB.members.find(x => fullName(x) === me);
+  if (meMember) sel.value = meMember.ville;
   $("#wrapNouvelleVille").style.display = "none";
   $("#addForm").querySelector('[name="date"]').value = todayISO();
   $("#addErr").textContent = "";
@@ -1341,61 +1571,43 @@ $("#addVille").addEventListener("change", e => {
   $("#wrapNouvelleVille").style.display = e.target.value === "__new" ? "" : "none";
 });
 
-$("#addForm").addEventListener("submit", async e => {
+$("#addForm").addEventListener("submit", e => {
   e.preventDefault();
   const f = new FormData(e.target);
   const g = k => (f.get(k) || "").toString().trim();
-  const err = $("#addErr");
-  err.textContent = "";
 
   let ville = g("ville");
   if (ville === "__new") {
     ville = g("nouvelleVille");
-    if (!ville) { err.textContent = "Indiquez le nom de la nouvelle ville."; return; }
+    if (!ville) { $("#addErr").textContent = "Indiquez le nom de la nouvelle ville."; return; }
+    if (!cityOf(ville)) DB.cities.push({ nom: ville, lat: null, lon: null, effectif: 0 });
   }
+
   const prenom = g("prenom"), nom = g("nom");
-  if (ETAT.membres.some(m => norm(fullName(m)) === norm(prenom + " " + nom) && m.ville === ville)) {
-    err.textContent = "Cette personne existe déjà pour cette ville.";
+  if (DB.members.some(m => norm(fullName(m)) === norm(prenom + " " + nom) && m.ville === ville)) {
+    $("#addErr").textContent = "Cette personne existe déjà pour cette ville.";
     return;
   }
 
-  const btn = $("#addGo");
-  btn.disabled = true; btn.textContent = "Enregistrement…";
-
-  if (!ETAT.villes.some(v => v.nom === ville)) {
-    await sb.from("villes").insert({ nom: ville, effectif: 0 });   // échoue sans droit admin : sans gravité
-  }
-
-  const { data, error } = await sb.from("membres").insert({
-    prenom, nom, ville,
+  const m = {
+    id: uid(), prenom, nom, ville,
     statut: g("statut") || "Nouveau",
     tel: g("tel"), email: g("email"),
-    date_rencontre: g("date") || todayISO(),
+    date: g("date") || todayISO(),
     note: g("note"),
-    ajoute_par: moi.nom, ajoute_par_id: moi.id
-  }).select().single();
-
-  btn.disabled = false; btn.textContent = "Enregistrer";
-  if (error) { err.textContent = "Enregistrement refusé : " + error.message; return; }
-
+    ajoutePar: me, cree: todayISO(), comments: [], prieres: []
+  };
   const p1 = g("priere");
-  if (p1) {
-    await sb.from("prieres").insert({
-      membre_id: data.id, texte: p1, auteur: moi.nom, auteur_id: moi.id, confie_le: todayISO()
-    });
-  }
+  if (p1) m.prieres.push({ id: uid(), texte: p1, auteur: me, date: todayISO(), exauce: false, dateExauce: null });
+  DB.members.push(m);
+  save();
   closeModal();
   filters.q = ""; filters.statut = ""; filters.ville = ville;
-  syncControls();
-  openMember(data.id);
+  syncControls(); renderAll();
+  openMember(m.id);
 });
 
-/* ======================= Données / rôles ======================= */
-function exigerAdmin() {
-  if (suisAdmin()) return true;
-  alert("Action réservée aux administrateurs.");
-  return false;
-}
+/* ======================= Données (export / import) ======================= */
 function download(name, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement("a");
@@ -1404,89 +1616,87 @@ function download(name, text, type) {
 }
 $("#btnExport").addEventListener("click", () => {
   if (!exigerAdmin()) return;
-  download(`teams-mbock-${todayISO()}.json`, JSON.stringify(ETAT, null, 2), "application/json");
+  download(`teams-mbock-${todayISO()}.json`, JSON.stringify(DB, null, 2), "application/json");
 });
+
 $("#btnExportCsv").addEventListener("click", () => {
   if (!exigerAdmin()) return;
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const head = ["Prénom","Nom","Ville","Statut","Téléphone","E-mail","Date de rencontre","Ajouté par","Contexte",
                 "Sujets de prière en cours","Sujets exaucés","Nb commentaires"];
-  const rows = ETAT.membres.map(m => [
-    m.prenom, m.nom, m.ville, m.statut, m.tel, m.email, jour(m.date_rencontre), m.ajoute_par, m.note,
-    prieresEnCours(m.id).map(p => p.texte).join(" | "),
-    prieresDe(m.id).filter(p => p.exauce).map(p => p.texte).join(" | "),
-    commentairesDe(m.id).length
+  const rows = DB.members.map(m => [
+    m.prenom, m.nom, m.ville, m.statut, m.tel, m.email, m.date, m.ajoutePar, m.note,
+    prieresEnCours(m).map(p => p.texte).join(" | "),
+    m.prieres.filter(p => p.exauce).map(p => p.texte).join(" | "),
+    m.comments.length
   ].map(q).join(";"));
   download(`membres-teams-mbock-${todayISO()}.csv`, "﻿" + head.map(q).join(";") + "\n" + rows.join("\n"), "text/csv;charset=utf-8");
 });
 
-function majRole() {
-  const admin = suisAdmin(), sup = suisSuper();
-  const pill = $("#meRole");
-  pill.hidden = !admin;
-  pill.textContent = sup ? "Admin principal" : "Admin";
-  pill.classList.toggle("super", sup);
-  $("#dataTools").hidden = !admin;
-  $("#dataDenied").hidden = admin;
-  $("#denyWho").textContent = SUPER_ADMIN;
-  $("#adminPanel").hidden = !sup;
-  if (sup) renderAdmins();
-}
+$("#btnImport").addEventListener("click", () => { if (exigerAdmin()) $("#fileIn").click(); });
+$("#fileIn").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file || !exigerAdmin()) { e.target.value = ""; return; }
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(r.result);
+      if (!p || !Array.isArray(p.members) || !Array.isArray(p.cities)) throw new Error("format");
+      normaliser(p);
+      const adm = p.admins.length ? `\nAdministrateurs du fichier : ${[SUPER_ADMIN, ...p.admins].join(", ")}.` : "";
+      if (!confirm(`Remplacer les données actuelles par ce fichier (${p.members.length} fiches) ?${adm}`)) return;
+      DB = p; save(); buildWho(); majRole(); syncControls(); renderAll(); closeData();
+    } catch (err) { alert("Fichier invalide : ce n'est pas une sauvegarde du tableau de bord."); }
+  };
+  r.readAsText(file);
+  e.target.value = "";
+});
 
-function renderAdmins() {
-  const admins = ETAT.profils.filter(p => p.role === "admin" || p.role === "super");
-  $("#adminCount").textContent = `${admins.length} / ${MAX_ADMINS}`;
-  const host = $("#adminRows");
-  host.innerHTML = "";
-
-  const tries = ETAT.profils.slice().sort((a, b) =>
-    (b.role === "super") - (a.role === "super") ||
-    (b.role === "admin") - (a.role === "admin") ||
-    a.nom.localeCompare(b.nom, "fr"));
-
-  if (tries.length <= 1) {
-    host.appendChild(el("div", "adm-empty", "Personne d'autre n'a encore créé son compte."));
-    return;
-  }
-
-  tries.forEach(p => {
-    const sup = p.role === "super";
-    const admin = p.role === "admin";
-    const row = el("div", "adm-row");
-    row.appendChild(el("span", "adm-name", p.nom));
-    if (sup || admin) row.appendChild(el("span", "pill" + (sup ? " super" : ""), sup ? "Principal" : "Admin"));
-    if (sup) {
-      row.appendChild(el("span", "adm-you", "vous"));
-    } else {
-      const b = el("button", "btn sm", admin ? "Retirer" : "Nommer admin");
-      b.type = "button";
-      if (!admin && admins.length >= MAX_ADMINS) {
-        b.disabled = true;
-        b.title = `Maximum atteint (${MAX_ADMINS} administrateurs).`;
-      }
-      b.addEventListener("click", async () => {
-        if (!confirm(admin ? `Retirer les droits d'administrateur à ${p.nom} ?`
-                           : `Nommer ${p.nom} administrateur ?\n\nIl/elle pourra exporter les fichiers.`)) return;
-        b.disabled = true;
-        const { error } = await sb.from("profils").update({ role: admin ? "membre" : "admin" }).eq("id", p.id);
-        b.disabled = false;
-        if (error) return alert("Refusé : " + error.message);
-        await chargerProfils();
-        renderAdmins(); majRole();
-      });
-      row.appendChild(b);
-    }
-    host.appendChild(row);
-  });
-}
+$("#btnReset").addEventListener("click", () => {
+  if (!exigerAdmin()) return;
+  if (!confirm("Effacer toutes les données saisies et revenir aux 152 fiches de test ?")) return;
+  DB = buildSeed(); save(); buildWho(); filters.q = filters.ville = filters.statut = ""; syncControls(); renderAll(); closeData();
+});
 
 function openData() {
-  $("#accCount").textContent = `Connecté en tant que ${moi.nom}` +
-    (suisSuper() ? " (administrateur principal)." : suisAdmin() ? " (administrateur)." : ".");
+  const n = accounts().length;
+  $("#accCount").textContent =
+    (n === 1 ? "1 accès enregistré sur ce navigateur" : `${n} accès enregistrés sur ce navigateur`) +
+    ` · vous êtes connecté en tant que ${me}${isAdmin(me) ? (isSuper(me) ? " (administrateur principal)" : " (administrateur)") : ""}.`;
   majRole();
   $("#dataModal").classList.add("show");
   $("#scrim").classList.add("show");
 }
+
+/* Changement de mot de passe : l'ancien est exigé, le nouveau repasse par les mêmes règles */
+$("#btnPwd").addEventListener("click", async () => {
+  const u = findAccount(me);
+  if (!u) { alert("Aucun accès trouvé pour votre nom."); return; }
+
+  const ancien = prompt("Votre mot de passe actuel :");
+  if (ancien === null) return;
+  if (!sameHash(await derive(ancien, u.salt, u.iter), u.hash)) { alert("Mot de passe actuel incorrect."); return; }
+
+  const nouveau = prompt(`Nouveau mot de passe (au moins ${MIN_AVANT_SUFFIXE} caractères, lettres + chiffres, terminé par « ${SUFFIX} ») :`);
+  if (nouveau === null) return;
+  const r = checkRules(nouveau, nouveau);
+  if (!r.suffix) { alert(`Le mot de passe doit se terminer par « ${SUFFIX} ».`); return; }
+  if (!r.len)    { alert(`Il faut au moins ${MIN_AVANT_SUFFIXE} caractères avant « ${SUFFIX} ».`); return; }
+  if (!r.mix)    { alert("Mélangez lettres et chiffres avant le suffixe."); return; }
+
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await derive(nouveau, salt, ITER);
+  saveAccounts(accounts().map(x => norm(x.nom) === norm(u.nom) ? { ...x, salt, hash, iter: ITER } : x));
+  alert("Mot de passe modifié.");
+});
+
+$("#btnWipeAcc").addEventListener("click", () => {
+  if (!isSuper(me)) { alert(`Action réservée à ${SUPER_ADMIN}.`); return; }
+  if (!confirm("Supprimer TOUS les accès enregistrés sur ce navigateur ?\n\nLes membres et commentaires sont conservés, mais chacun devra recréer son mot de passe.")) return;
+  disque.del(AKEY);
+  closeData();
+  fermerSession();
+});
 function closeData() {
   $("#dataModal").classList.remove("show");
   if (!$("#drawer").classList.contains("show") && !$("#modal").classList.contains("show")) $("#scrim").classList.remove("show");
@@ -1494,13 +1704,14 @@ function closeData() {
 
 /* ======================= Contrôles ======================= */
 function buildWho() {
-  $("#meName").textContent = moi ? moi.nom : "—";
-  $("#meAv").textContent = moi ? inits(moi.nom) : "?";
+  $("#meName").textContent = me || "—";
+  $("#meAv").textContent = me ? me.split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase() : "?";
   const dl = $("#dlNoms");
   dl.innerHTML = "";
-  ETAT.membres.slice().sort((a, b) => fullName(a).localeCompare(fullName(b), "fr"))
+  DB.members.slice().sort((a, b) => fullName(a).localeCompare(fullName(b), "fr"))
     .forEach(m => dl.appendChild(new Option(fullName(m))));
 }
+
 function syncControls() {
   const sel = $("#fVille"), cur = filters.ville;
   sel.innerHTML = "";
@@ -1514,6 +1725,7 @@ $("#q").addEventListener("input", e => { filters.q = e.target.value; renderList(
 $("#fVille").addEventListener("change", e => { filters.ville = e.target.value; renderList(); });
 $("#fStatut").addEventListener("change", e => { filters.statut = e.target.value; renderStatuts(); renderList(); });
 
+/* ======================= Divers ======================= */
 $("#btnAdd").addEventListener("click", openModal);
 $("#addCancel").addEventListener("click", closeModal);
 $("#dClose").addEventListener("click", closeDrawer);
@@ -1527,35 +1739,193 @@ $("#btnTheme").addEventListener("click", () => {
   const cur = document.documentElement.getAttribute("data-theme") || (dark ? "dark" : "light");
   const next = cur === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
-  try { localStorage.setItem("teams-mbock-theme", next); } catch (e) {}
+  disque.set("teams-mbock-theme", next);
 });
 (function initTheme() {
-  try {
-    const t = localStorage.getItem("teams-mbock-theme");
-    if (t) document.documentElement.setAttribute("data-theme", t);
-  } catch (e) {}
+  const t = disque.get("teams-mbock-theme");
+  if (t) document.documentElement.setAttribute("data-theme", t);
 })();
 
 let rz;
 addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderMap, 150); });
 
-/* ======================= Rendu global ======================= */
-let pendingRender = null;
-function renderAll() {
-  renderKPI(); renderStatuts(); renderPrieres(); renderBars(); renderMap(); renderList(); buildWho();
-  if (openId) {
-    const encore = ETAT.membres.some(m => m.id === openId);
-    if (encore && $("#drawer").classList.contains("show")) openMember(openId);
-  }
-}
-/* Le temps réel peut livrer plusieurs événements d'affilée : on ne redessine
-   qu'une fois, à la fin de la rafale. */
-function planifierRendu() {
-  clearTimeout(pendingRender);
-  pendingRender = setTimeout(renderAll, 60);
+/* =======================================================================
+   Portail d'accès
+   -----------------------------------------------------------------------
+   Le mot de passe n'est jamais stocké : on ne conserve qu'une empreinte
+   PBKDF2-SHA256 (600 000 itérations) et un sel aléatoire propre à chaque
+   personne. Deux mots de passe identiques donnent donc deux empreintes
+   différentes, et l'empreinte ne permet pas de retrouver le mot de passe.
+
+   Limite assumée : cette page n'a pas de serveur. Le portail protège
+   l'ENTRÉE de l'interface, pas le fichier — les données restent lisibles
+   par quiconque a accès à ce navigateur.
+   ======================================================================= */
+const AKEY   = "teams-mbock-acces";
+const SKEY   = "teams-mbock-session";
+const SUFFIX = ".mbock";
+const ITER   = 600000;   // recommandation OWASP pour PBKDF2-HMAC-SHA256
+const MIN_AVANT_SUFFIXE = 6;
+
+const enc = new TextEncoder();
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+const fromHex = h => new Uint8Array(h.match(/.{2}/g).map(b => parseInt(b, 16)));
+
+function cryptoOk() {
+  return !!(window.crypto && crypto.subtle && crypto.getRandomValues);
 }
 
-/* ======================= Authentification ======================= */
+async function derive(pwd, saltHex, iter) {
+  const key = await crypto.subtle.importKey("raw", enc.encode(pwd), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name:"PBKDF2", salt: fromHex(saltHex), iterations: iter, hash:"SHA-256" }, key, 256);
+  return toHex(bits);
+}
+
+/* Comparaison à temps constant : ne révèle pas où la première différence apparaît */
+function sameHash(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function accounts() {
+  try {
+    const p = JSON.parse(disque.get(AKEY) || "{}");
+    return Array.isArray(p.users) ? p.users : [];
+  } catch (e) { return []; }
+}
+function saveAccounts(users) { disque.set(AKEY, JSON.stringify({ version:1, users })); }
+function findAccount(nom) { return accounts().find(u => norm(u.nom) === norm(nom)); }
+
+/* ======================= Rôles ======================= */
+/* L'administrateur principal est fixé dans le code : son statut ne peut pas
+   lui être retiré depuis l'interface, et lui seul nomme les autres.
+
+   Les administrateurs nommés sont stockés dans DB.admins (une liste de noms),
+   et NON dans les comptes : on peut donc nommer quelqu'un avant même qu'il
+   ait créé son accès, et la liste voyage avec l'export JSON. */
+const SUPER_ADMIN = "Désiré KENY";
+const MAX_ADMINS  = 4;                 // le principal compte dans les 4
+
+const isSuper = nom => norm(nom) === norm(SUPER_ADMIN);
+function isAdmin(nom) {
+  if (!nom) return false;
+  return isSuper(nom) || DB.admins.some(a => norm(a) === norm(nom));
+}
+function adminNames() { return [SUPER_ADMIN, ...DB.admins]; }
+
+/* Reflète le rôle courant dans l'interface */
+function majRole() {
+  const admin = isAdmin(me), sup = isSuper(me);
+
+  const pill = $("#meRole");
+  pill.hidden = !admin;
+  pill.textContent = sup ? "Admin principal" : "Admin";
+  pill.classList.toggle("super", sup);
+
+  $("#dataTools").hidden  = !admin;
+  $("#dataDenied").hidden = admin;
+  $("#denyWho").textContent = SUPER_ADMIN;
+
+  $("#adminPanel").hidden = !sup;
+  if (sup) renderAdmins();
+}
+
+function renderAdmins() {
+  const noms = adminNames();
+  const plein = noms.length >= MAX_ADMINS;
+  $("#adminCount").textContent = `${noms.length} / ${MAX_ADMINS}`;
+
+  const host = $("#adminRows");
+  host.innerHTML = "";
+
+  noms.forEach(nom => {
+    const sup = isSuper(nom);
+    const row = el("div", "adm-row");
+    row.appendChild(el("span", "adm-name", nom));
+    row.appendChild(el("span", "pill" + (sup ? " super" : ""), sup ? "Principal" : "Admin"));
+
+    if (sup) {
+      row.appendChild(el("span", "adm-you", "vous"));
+    } else {
+      const compte = findAccount(nom);
+      if (!compte) row.appendChild(el("span", "adm-you", "accès pas encore créé"));
+      const b = el("button", "btn sm", "Retirer");
+      b.type = "button";
+      b.addEventListener("click", () => {
+        if (!confirm(`Retirer les droits d'administrateur à ${nom} ?`)) return;
+        DB.admins = DB.admins.filter(a => norm(a) !== norm(nom));
+        save(); renderAdmins(); majRole();
+      });
+      row.appendChild(b);
+    }
+    host.appendChild(row);
+  });
+
+  $("#admNom").disabled = plein;
+  $("#btnNameAdmin").disabled = plein;
+  $("#admFull").hidden = !plein;
+}
+
+/* Nomination directe : le nom suffit, la personne n'a pas besoin d'avoir un accès */
+$("#btnNameAdmin").addEventListener("click", () => {
+  if (!isSuper(me)) { alert(`Seul ${SUPER_ADMIN} peut nommer un administrateur.`); return; }
+
+  const champ = $("#admNom");
+  const nom = champ.value.trim().replace(/\s+/g, " ");
+
+  if (nom.length < 3)   { alert("Indiquez le prénom et le nom de la personne."); return; }
+  if (isSuper(nom))     { alert("Vous êtes déjà l'administrateur principal."); return; }
+  if (isAdmin(nom))     { alert(`${nom} est déjà administrateur.`); return; }
+  if (adminNames().length >= MAX_ADMINS) { alert(`Les ${MAX_ADMINS} places sont prises.`); return; }
+
+  // Nom absent de la liste des membres : sans doute une faute de frappe
+  const connu = DB.members.some(m => norm(fullName(m)) === norm(nom));
+  if (!connu && !confirm(`« ${nom} » ne figure pas dans la liste des membres.\n\nLe nommer quand même administrateur ?`)) return;
+
+  DB.admins.push(nom);
+  save();
+  champ.value = "";
+  renderAdmins();
+  majRole();
+  alert(`${nom} est administrateur.\n\nIl/elle pourra exporter et importer les fichiers dès la création de son accès, avec ce nom exact.`);
+});
+
+/* Garde-fou appliqué à chaque action réservée */
+function exigerAdmin() {
+  if (isAdmin(me)) return true;
+  alert(`Action réservée aux administrateurs.\n\nAdministrateurs actuels : ${adminNames().join(", ")}.`);
+  return false;
+}
+
+/* --- Règles du mot de passe --- */
+function checkRules(pwd, pwd2) {
+  const suffix = pwd.endsWith(SUFFIX);
+  const base   = suffix ? pwd.slice(0, -SUFFIX.length) : "";
+  return {
+    suffix,
+    len:   base.length >= MIN_AVANT_SUFFIXE,
+    mix:   /[a-zA-ZÀ-ÿ]/.test(base) && /[0-9]/.test(base),
+    match: pwd.length > 0 && pwd === pwd2
+  };
+}
+function paintRules() {
+  const r = checkRules($("#suPwd").value, $("#suPwd2").value);
+  document.querySelectorAll("#rules li").forEach(li => {
+    li.classList.toggle("ok", !!r[li.dataset.rule]);
+  });
+  return r;
+}
+["#suPwd", "#suPwd2"].forEach(s => $(s).addEventListener("input", paintRules));
+
+/* Confirme à l'administrateur principal que son nom est bien reconnu */
+$("#suNom").addEventListener("input", e => {
+  $("#suSuper").hidden = !isSuper(e.target.value.trim().replace(/\s+/g, " "));
+});
+
+/* --- Bascule des onglets --- */
 function showTab(which) {
   const login = which === "login";
   $("#tabLogin").classList.toggle("on", login);
@@ -1564,218 +1934,132 @@ function showTab(which) {
   $("#signupForm").hidden = login;
   $("#loginErr").textContent = "";
   $("#suErr").textContent = "";
-  setTimeout(() => $(login ? "#loginMail" : "#suNom").focus(), 40);
+  setTimeout(() => $(login ? "#loginNom" : "#suNom").focus(), 40);
 }
 $("#tabLogin").addEventListener("click", () => showTab("login"));
 $("#tabSignup").addEventListener("click", () => showTab("signup"));
 
-function reglesMdp(p) {
-  return { len: p.length >= 8, mix: /[a-zA-ZÀ-ÿ]/.test(p) && /[0-9]/.test(p) };
-}
-function paintRules() {
-  const r = reglesMdp($("#suPwd").value);
-  document.querySelectorAll("#rules li").forEach(li => li.classList.toggle("ok", !!r[li.dataset.rule]));
-  return r;
-}
-$("#suPwd").addEventListener("input", paintRules);
-$("#suNom").addEventListener("input", e => {
-  $("#suSuper").hidden = !isSuper(e.target.value.trim().replace(/\s+/g, " "));
-});
-
-const messagesAuth = {
-  "Invalid login credentials": "E-mail ou mot de passe incorrect.",
-  "Email not confirmed": "Votre e-mail n'est pas encore confirmé. Ouvrez le message envoyé par Supabase.",
-  "User already registered": "Un compte existe déjà avec cet e-mail. Utilisez l'onglet « J'ai déjà un compte »."
-};
-const traduire = msg => messagesAuth[msg] || msg;
-
+/* --- Création d'un accès --- */
 $("#signupForm").addEventListener("submit", async e => {
   e.preventDefault();
   const err = $("#suErr");
   err.textContent = "";
-  const nom = $("#suNom").value.trim().replace(/\s+/g, " ");
-  const mail = $("#suMail").value.trim();
-  const pwd = $("#suPwd").value;
 
-  if (nom.length < 3) { err.textContent = "Indiquez votre prénom et votre nom."; return; }
-  const r = reglesMdp(pwd);
-  if (!r.len) { err.textContent = "Le mot de passe doit faire au moins 8 caractères."; return; }
-  if (!r.mix) { err.textContent = "Mélangez lettres et chiffres."; return; }
+  if (!cryptoOk()) { err.textContent = "Ce navigateur ne permet pas de chiffrer le mot de passe. Ouvrez la page dans Chrome, Edge ou Firefox à jour."; return; }
+
+  const nom = $("#suNom").value.trim().replace(/\s+/g, " ");
+  const pwd = $("#suPwd").value, pwd2 = $("#suPwd2").value;
+
+  if (nom.length < 3)   { err.textContent = "Indiquez votre prénom et votre nom."; return; }
+  if (findAccount(nom)) { err.textContent = "Un accès existe déjà pour ce nom. Utilisez l'onglet « J'ai déjà un accès »."; return; }
+
+  const r = checkRules(pwd, pwd2);
+  if (!r.suffix) { err.textContent = `Le mot de passe doit se terminer par « ${SUFFIX} ».`; return; }
+  if (!r.len)    { err.textContent = `Il faut au moins ${MIN_AVANT_SUFFIXE} caractères avant « ${SUFFIX} ».`; return; }
+  if (!r.mix)    { err.textContent = "Mélangez lettres et chiffres avant le suffixe."; return; }
+  if (!r.match)  { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
 
   const btn = $("#suGo");
   btn.disabled = true; btn.textContent = "Création…";
-  const { data, error } = await sb.auth.signUp({ email: mail, password: pwd, options: { data: { nom } } });
-  btn.disabled = false; btn.textContent = "Créer mon compte";
-
-  if (error) { err.textContent = traduire(error.message); return; }
-  if (!data.session) {
-    err.style.color = "var(--good-text)";
-    err.textContent = "Compte créé. Confirmez votre e-mail, puis connectez-vous.";
-    showTab("login");
-    $("#loginMail").value = mail;
-    setTimeout(() => { err.style.color = ""; }, 100);
+  try {
+    const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+    const hash = await derive(pwd, salt, ITER);
+    // Le rôle ne dépend pas du compte : il vient de DB.admins (ou du nom de l'admin principal)
+    saveAccounts(accounts().concat({ nom, salt, hash, iter: ITER, cree: todayISO() }));
+    $("#suPwd").value = $("#suPwd2").value = "";
+    ouvrirSession(nom);
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = "La création a échoué. Réessayez.";
+  } finally {
+    btn.disabled = false; btn.textContent = "Créer mon accès";
   }
 });
 
+/* --- Connexion --- */
 $("#loginForm").addEventListener("submit", async e => {
   e.preventDefault();
   const err = $("#loginErr");
   err.textContent = "";
+
+  if (!cryptoOk()) { err.textContent = "Ce navigateur ne permet pas de vérifier le mot de passe. Ouvrez la page dans Chrome, Edge ou Firefox à jour."; return; }
+
+  const nom = $("#loginNom").value.trim().replace(/\s+/g, " ");
+  const pwd = $("#loginPwd").value;
   const btn = $("#loginGo");
+
   btn.disabled = true; btn.textContent = "Vérification…";
-  const { error } = await sb.auth.signInWithPassword({
-    email: $("#loginMail").value.trim(), password: $("#loginPwd").value
-  });
-  btn.disabled = false; btn.textContent = "Entrer";
-  if (error) err.textContent = traduire(error.message);
-});
-
-$("#btnLogout").addEventListener("click", async () => { await sb.auth.signOut(); });
-
-/* ======================= Chargement des données ======================= */
-async function chargerProfils() {
-  const { data } = await sb.from("profils").select("*");
-  ETAT.profils = data || [];
-  if (moi) {
-    const p = ETAT.profils.find(x => x.id === moi.id);
-    if (p) moi = { id: p.id, nom: p.nom, role: p.role };
-  }
-}
-
-async function chargerTout() {
-  const [v, m, c, p] = await Promise.all([
-    sb.from("villes").select("*"),
-    sb.from("membres").select("*"),
-    sb.from("commentaires").select("*"),
-    sb.from("prieres").select("*")
-  ]);
-  const souci = [v, m, c, p].find(r => r.error);
-  if (souci) throw new Error(souci.error.message);
-  ETAT.villes = v.data || [];
-  ETAT.membres = m.data || [];
-  ETAT.commentaires = c.data || [];
-  ETAT.prieres = p.data || [];
-  await chargerProfils();
-}
-
-/* ======================= Temps réel ======================= */
-function appliquer(table, ev) {
-  const liste = ETAT[table];
-  if (!liste) return;
-  if (ev.eventType === "INSERT") {
-    if (!liste.some(x => x.id === ev.new.id)) liste.push(ev.new);
-  } else if (ev.eventType === "UPDATE") {
-    const i = liste.findIndex(x => x.id === ev.new.id);
-    if (i >= 0) liste[i] = ev.new; else liste.push(ev.new);
-  } else if (ev.eventType === "DELETE") {
-    const i = liste.findIndex(x => x.id === ev.old.id);
-    if (i >= 0) liste.splice(i, 1);
-  }
-}
-
-function annoncer(table, ev) {
-  if (ev.eventType !== "INSERT" || !ev.new) return;
-  const parMoi = ev.new.ajoute_par_id === moi.id || ev.new.auteur_id === moi.id;
-  if (parMoi) return;
-  if (table === "membres") {
-    toast(`<b>${escapeHtml(ev.new.ajoute_par)}</b> a ajouté <b>${escapeHtml(ev.new.prenom + " " + ev.new.nom)}</b> à ${escapeHtml(ev.new.ville)}.`);
-  } else if (table === "prieres") {
-    const m = ETAT.membres.find(x => x.id === ev.new.membre_id);
-    toast(`Nouveau sujet de prière${m ? " pour <b>" + escapeHtml(fullName(m)) + "</b>" : ""}.`);
-  } else if (table === "commentaires") {
-    const m = ETAT.membres.find(x => x.id === ev.new.membre_id);
-    toast(`<b>${escapeHtml(ev.new.auteur)}</b> a commenté${m ? " la fiche de <b>" + escapeHtml(fullName(m)) + "</b>" : ""}.`);
-  }
-}
-
-function majLiaison(etat) {
-  const n = $("#live"), t = $("#liveTxt");
-  n.className = "live " + etat;
-  t.textContent = { on:"En direct", wait:"Liaison…", off:"Hors ligne" }[etat];
-}
-
-let canal = null;
-function ecouter() {
-  if (canal) sb.removeChannel(canal);
-  canal = sb.channel("teams-mbock");
-  ["membres", "commentaires", "prieres", "profils"].forEach(table => {
-    canal.on("postgres_changes", { event: "*", schema: "public", table }, ev => {
-      appliquer(table, ev);
-      annoncer(table, ev);
-      planifierRendu();
-    });
-  });
-  canal.subscribe(statut => {
-    if (statut === "SUBSCRIBED") majLiaison("on");
-    else if (statut === "CHANNEL_ERROR" || statut === "TIMED_OUT" || statut === "CLOSED") majLiaison("off");
-    else majLiaison("wait");
-  });
-}
-
-/* Un onglet en veille peut manquer des événements : on resynchronise au retour. */
-document.addEventListener("visibilitychange", async () => {
-  if (document.visibilityState === "visible" && moi) {
-    try { await chargerTout(); renderAll(); } catch (e) { console.warn(e); }
+  try {
+    const u = findAccount(nom);
+    // On dérive même si le compte n'existe pas : le temps de réponse ne
+    // révèle pas si le nom est connu ou non.
+    const salt = u ? u.salt : "00000000000000000000000000000000";
+    const hash = await derive(pwd, salt, u ? u.iter : ITER);
+    if (u && sameHash(hash, u.hash)) {
+      $("#loginPwd").value = "";
+      ouvrirSession(u.nom);
+    } else {
+      err.textContent = "Nom ou mot de passe incorrect.";
+    }
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = "La vérification a échoué. Réessayez.";
+  } finally {
+    btn.disabled = false; btn.textContent = "Entrer";
   }
 });
+
+/* --- Ouverture / fermeture de session --- */
+function ouvrirSession(nom) {
+  me = nom;
+  session.set(SKEY, nom);
+  disque.set(UKEY, nom);
+  document.body.classList.remove("locked");
+  buildWho();
+  majRole();
+  syncControls();
+  renderAll();
+}
+function fermerSession() {
+  session.del(SKEY);
+  me = "";
+  document.body.classList.add("locked");
+  $("#loginPwd").value = "";
+  $("#loginNom").value = disque.get(UKEY) || "";
+  closeDrawer(); closeModal(); closeData();
+  majPortail();
+}
+$("#btnLogout").addEventListener("click", fermerSession);
+
+/* Prépare le portail : nom pré-rempli, onglet adapté à l'état du navigateur */
+function majPortail() {
+  const aucun = accounts().length === 0;
+  $("#lockNone").hidden = !aucun;
+  $("#loginNom").value = disque.get(UKEY) || "";
+  showTab(aucun ? "signup" : "login");
+  paintRules();
+}
 
 /* ======================= Démarrage ======================= */
-function afficherApp(oui) {
-  $("#boot").hidden = true;
-  $("#lock").hidden = oui;
-  document.querySelector("header.top").hidden = !oui;
-  document.querySelector(".wrap").hidden = !oui;
+function renderAll() { renderKPI(); renderStatuts(); renderPrieres(); renderBars(); renderMap(); renderList(); }
+
+/* Le navigateur refuse d'écrire : on prévient plutôt que de laisser croire
+   que les saisies sont enregistrées. */
+if (!disque.persistant) {
+  const bar = el("div", "warnbar");
+  bar.innerHTML = "⚠ <b>Ce navigateur bloque l'enregistrement local.</b> Vous pouvez tout consulter et tester, mais vos ajouts disparaîtront à la fermeture de l'onglet.";
+  document.body.insertBefore(bar, document.body.firstChild);
 }
 
-function panne(titre, detail) {
-  $("#boot").hidden = false;
-  $("#boot").querySelector(".spin").style.display = "none";
-  $("#boot").querySelector("h2").textContent = titre;
-  $("#bootMsg").innerHTML = detail;
+DB = load();
+buildWho();
+
+const sessionEnCours = session.get(SKEY);
+if (sessionEnCours && findAccount(sessionEnCours)) {
+  ouvrirSession(findAccount(sessionEnCours).nom);
+} else {
+  majPortail();
 }
-
-async function demarrer() {
-  if (SUPABASE_URL.startsWith("__")) {
-    panne("Configuration manquante",
-      "Les identifiants Supabase n'ont pas encore été renseignés dans <code>index.html</code>.");
-    return;
-  }
-  if (!window.supabase) {
-    panne("Bibliothèque non chargée",
-      "Impossible de joindre le serveur. Vérifiez votre connexion Internet puis rechargez la page.");
-    return;
-  }
-
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  sb.auth.onAuthStateChange(async (event, sessionAuth) => {
-    if (sessionAuth && sessionAuth.user) {
-      try {
-        moi = { id: sessionAuth.user.id, nom: sessionAuth.user.email, role: "membre" };
-        await chargerTout();
-        const p = ETAT.profils.find(x => x.id === moi.id);
-        if (p) moi = { id: p.id, nom: p.nom, role: p.role };
-        afficherApp(true);
-        majRole();
-        syncControls();
-        renderAll();
-        ecouter();
-      } catch (e) {
-        panne("Base inaccessible", "Détail : <code>" + escapeHtml(e.message) + "</code>");
-      }
-    } else {
-      moi = null;
-      if (canal) { sb.removeChannel(canal); canal = null; }
-      afficherApp(false);
-      showTab("login");
-    }
-  });
-
-  const { data } = await sb.auth.getSession();
-  if (!data.session) { afficherApp(false); showTab("login"); }
-}
-
-demarrer();
 </script>
 </body>
 </html>
