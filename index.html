@@ -156,8 +156,12 @@ header.top {
 #admFull[hidden] { display:none; }
 
 /* ---------- Portail d'accès ---------- */
-body.locked header.top, body.locked .wrap { display:none; }
-body:not(.locked) .lock { display:none; }
+/* La visibilité est pilotée par l'attribut [hidden] posé en JS.
+   Ces blocs déclarent display:grid / :flex, qui l'emporterait sur le
+   [hidden] du navigateur : on le rétablit explicitement. */
+.lock[hidden], .boot[hidden] { display:none !important; }
+.btn-col { display:grid; gap:9px; }
+.btn-col[hidden] { display:none; }
 .lock {
   position:fixed; inset:0; z-index:300; background: var(--plane);
   display:grid; place-items:center; padding:24px; overflow-y:auto;
@@ -762,7 +766,7 @@ body:not(.locked) .lock { display:none; }
   <h2 id="dataTitle">Données</h2>
   <p class="m-hint">La base est partagée : ces exports sont des photographies de l'état actuel.</p>
 
-  <div style="display:grid;gap:9px" id="dataTools">
+  <div class="btn-col" id="dataTools">
     <button class="btn" id="btnExport">⬇ Exporter en JSON (sauvegarde complète)</button>
     <button class="btn" id="btnExportCsv">⬇ Exporter les membres en CSV (Excel)</button>
   </div>
@@ -1771,9 +1775,23 @@ async function demarrer() {
     }
   });
 
-  const { data } = await sb.auth.getSession();
-  if (!data.session) { afficherApp(false); showTab("login"); }
+  try {
+    const { data } = await sb.auth.getSession();
+    if (!data.session) { afficherApp(false); showTab("login"); }
+  } catch (e) {
+    panne("Serveur injoignable", "Détail : <code>" + escapeHtml(e.message) + "</code>");
+  }
 }
+
+/* Filet de sécurité : l'écran de chargement ne doit jamais tourner sans fin.
+   Passé 12 secondes sans avoir rien affiché, on le dit plutôt que de laisser
+   l'utilisateur devant une roue qui tourne. */
+setTimeout(() => {
+  if (!$("#boot").hidden && $("#boot").querySelector(".spin").style.display !== "none") {
+    panne("Connexion trop longue",
+      "La base ne répond pas. Vérifiez votre connexion Internet, puis rechargez la page (Ctrl + Maj + R).");
+  }
+}, 12000);
 
 demarrer();
 </script>
