@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TEAMS MBOCK — Tableau de bord de l'équipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ---------- Tokens ---------- */
 :root {
@@ -31,7 +34,7 @@
   --good-text:      #006300;
 
   --radius:         14px;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
@@ -301,11 +304,27 @@ header.top {
 
 /* ---------- Map ---------- */
 .map-holder { position:relative; }
-#mapSvg { width:100%; height:auto; display:block; }
+#mapSvg, #mapSvgEff { width:100%; height:auto; display:block; }
+.map-wide { max-width:520px; margin:4px auto 0; }
 .fr-outline { fill: var(--surface-2); stroke: var(--axis); stroke-width:1; stroke-linejoin:round; }
 .bubble { fill: var(--brand); fill-opacity:.55; stroke: var(--surface); stroke-width:2; cursor:pointer; transition: fill-opacity .12s ease; }
 .bubble:hover, .bubble.on { fill-opacity:.9; }
 .bubble-label { font-size:8px; fill: var(--ink-2); pointer-events:none; font-family: var(--font); }
+
+/* ---------- Charts (évolution & par année) ---------- */
+.chart-holder { position:relative; }
+.chart-holder svg { width:100%; height:auto; display:block; }
+.ch-grid { stroke: var(--grid); stroke-width:1; }
+.ch-axis { stroke: var(--axis); stroke-width:1; }
+.ch-tick { font-size:10px; fill: var(--muted); font-family: var(--font); }
+.ch-tick.val { font-variant-numeric: tabular-nums; }
+.ch-area { fill: var(--brand); fill-opacity:.10; }
+.ch-line { fill:none; stroke: var(--brand); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.ch-dot { fill: var(--surface); stroke: var(--brand); stroke-width:2; cursor:pointer; }
+.ch-dot:hover, .ch-dot.on { fill: var(--brand); }
+.ch-bar { fill: var(--brand); cursor:pointer; transition: fill-opacity .12s ease; }
+.ch-bar:hover, .ch-bar.on { fill-opacity:.82; }
+.ch-empty { font-size:12px; fill: var(--muted); font-family: var(--font); }
 
 /* ---------- Tooltip ---------- */
 #tip {
@@ -435,6 +454,74 @@ header.top {
 .pray-row .dotb { width:7px; height:7px; border-radius:50%; background: var(--brand); flex:none; margin-top:6px; }
 .pray-row .pr-who { font-size:11.5px; color:var(--muted); margin-top:2px; }
 .pray-empty { padding:26px 8px; text-align:center; color:var(--muted); font-size:13px; }
+
+/* Ligne de prière avec actions en ligne (page Prier) */
+.pray-line { display:flex; gap:11px; align-items:flex-start; width:100%; padding:10px 8px; border-top:1px solid var(--grid); border-radius:9px; }
+.pray-line:first-child { border-top:0; }
+.pray-line:hover { background: var(--surface-2); }
+.pray-line .dotb { width:7px; height:7px; border-radius:50%; background: var(--brand); flex:none; margin-top:6px; }
+.pray-line.done .dotb { background: var(--good); }
+.pray-line .pl-body { min-width:0; flex:1; cursor:default; }
+.pray-line.link .pl-body { cursor:pointer; }
+.pray-line .pl-text { font-size:13.5px; word-break:break-word; }
+.pray-line.done .pl-text { color: var(--muted); }
+.pray-line .pl-who { font-size:11.5px; color: var(--muted); margin-top:2px; }
+.pray-line .pl-act { flex:none; display:flex; gap:6px; align-items:center; }
+.pray-tag-eq { display:inline-block; font-size:10px; font-weight:650; letter-spacing:.02em; padding:1px 7px; border-radius:999px; background: var(--brand-soft); color: var(--seq-700); margin-right:6px; vertical-align:1px; }
+
+/* Formulaires de la page Prier */
+.pr-form { display:flex; gap:9px; flex-wrap:wrap; margin-top:2px; }
+.pr-form input {
+  flex:1; min-width:150px; border:1px solid var(--border); background: var(--plane);
+  border-radius:10px; padding:9px 12px; font-size:13.5px;
+}
+.pr-form input[type="number"] { flex:0 0 150px; min-width:120px; }
+.pr-form input[type="date"] { flex:0 0 160px; min-width:140px; }
+.pr-form button { flex:none; }
+
+.pr-ou { align-self:center; font-size:12px; color: var(--muted); padding:0 2px; }
+.pr-field { display:flex; flex-direction:column; gap:3px; flex:0 0 auto; }
+.pr-field span { font-size:11px; color: var(--muted); font-weight:500; padding-left:2px; }
+.pr-field input { border:1px solid var(--border); background: var(--plane); border-radius:10px; padding:8px 11px; font-size:13.5px; }
+
+/* Objectif d'équipe */
+.goal { background: var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:13px 15px; margin:4px 0 16px; }
+.goal-head { display:flex; align-items:baseline; gap:10px; margin-bottom:9px; }
+.goal-title { font-size:13px; font-weight:600; }
+.goal-txt { margin-left:auto; font-size:12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.goal-txt b { color: var(--ink); font-weight:700; }
+.goal-bar { height:12px; border-radius:999px; background: var(--surface); border:1px solid var(--border); overflow:hidden; }
+.goal-bar i { display:block; height:100%; width:0; border-radius:999px; background: linear-gradient(90deg, var(--brand), var(--seq-700)); transition: width .5s cubic-bezier(.32,.72,0,1); }
+.goal-bar.reached i { background: linear-gradient(90deg, var(--good), #0a8a0a); }
+.goal-form { display:flex; gap:8px; margin-top:11px; }
+.goal-form[hidden] { display:none; }
+.goal-form input { flex:1; min-width:0; border:1px solid var(--border); background: var(--plane); border-radius:9px; padding:7px 11px; font-size:13px; }
+
+.pr-subhead { font-size:13.5px; font-weight:600; margin:20px 0 8px; color: var(--ink-2); }
+
+/* Objectifs multiples */
+.obj-list { display:grid; gap:12px; margin:4px 0 2px; }
+.obj-item { background: var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.obj-top { display:flex; align-items:baseline; gap:10px; margin-bottom:8px; }
+.obj-nom { font-size:14px; font-weight:600; }
+.obj-val { margin-left:auto; font-size:12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.obj-val b { color: var(--ink); font-weight:700; }
+.obj-act { display:flex; gap:6px; margin-top:9px; }
+.obj-act .btn { color: var(--critical); }
+.obj-empty { padding:16px 4px; color: var(--muted); font-size:13px; }
+.obj-reached .goal-bar i { background: linear-gradient(90deg, var(--good), #0a8a0a); }
+
+.heure-live { font-size:12.5px; color: var(--brand); font-weight:600; min-height:16px; margin-top:9px; }
+.heure-actions { margin-top:12px; }
+.heure-actions .btn { color: var(--critical); }
+.goal-form .btn.ghost { color: var(--critical); }
+.heure-log { margin-top:14px; }
+.heure-row { display:flex; gap:12px; align-items:center; padding:9px 6px; border-top:1px solid var(--grid); font-size:13px; }
+.heure-row:first-child { border-top:0; }
+.heure-h { font-weight:700; font-variant-numeric: tabular-nums; color: var(--brand); min-width:58px; }
+.heure-meta { color: var(--muted); font-size:12px; min-width:0; flex:1; }
+.heure-meta b { color: var(--ink-2); font-weight:600; }
+.heure-row .sortie-del { margin-left:auto; }
 .comment { display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--grid); }
 .comment:first-of-type { border-top:0; }
 .c-body { min-width:0; flex:1; }
@@ -518,6 +605,278 @@ header.top {
 .boot .err { text-align:left; margin-top:14px; }
 .boot-actions { display:flex; gap:9px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
 .boot code { background: var(--surface-2); padding:2px 6px; border-radius:5px; font-size:12px; word-break:break-all; }
+
+/* ---------- Menu de navigation ---------- */
+.mainnav {
+  max-width:1280px; margin:0 auto; padding:0 12px;
+  display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;
+}
+.mainnav::-webkit-scrollbar { display:none; }
+.navlink {
+  border:0; background:transparent; cursor:pointer; white-space:nowrap;
+  padding:11px 15px 12px; font-size:14px; font-weight:550; color: var(--ink-2);
+  border-bottom:2px solid transparent; display:inline-flex; align-items:center; gap:8px;
+  transition: color .12s ease, border-color .12s ease;
+}
+.navlink:hover { color: var(--ink); }
+.navlink.on { color: var(--brand); border-bottom-color: var(--brand); }
+.navlink svg { flex:none; }
+
+.view[hidden] { display:none; }
+.view { animation: fade .18s ease both; }
+@keyframes fade { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .view { animation:none; } }
+
+.view-head { margin:26px 0 4px; }
+.view-head h2 { font-size:22px; letter-spacing:-.02em; }
+.view-head p { margin:4px 0 0; font-size:13.5px; color: var(--muted); }
+.view-head { display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+.view-head .grow { flex:1; min-width:0; }
+
+/* ---------- Sorties d'évangélisation ---------- */
+.sortie {
+  display:flex; align-items:center; gap:14px; padding:13px 14px; border-radius:12px;
+  border:1px solid var(--border); background: var(--surface); margin-bottom:9px;
+  box-shadow: var(--shadow); flex-wrap:wrap;
+}
+.sortie-date {
+  flex:none; width:52px; text-align:center; line-height:1.05;
+  border-right:1px solid var(--grid); padding-right:12px;
+}
+.sortie-date .d { font-size:20px; font-weight:700; letter-spacing:-.02em; }
+.sortie-date .m { font-size:11px; color: var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.sortie-main { min-width:0; flex:1; }
+.sortie-main .s-ville { font-weight:600; font-size:14.5px; }
+.sortie-main .s-lieu { font-size:12.5px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sortie-stats { display:flex; gap:8px; flex:none; flex-wrap:wrap; justify-content:flex-end; }
+.s-stat {
+  display:inline-flex; flex-direction:column; align-items:center; gap:1px;
+  background: var(--surface-2); border:1px solid var(--border); border-radius:9px;
+  padding:5px 11px; min-width:52px;
+}
+.s-stat b { font-size:16px; font-weight:650; font-variant-numeric: tabular-nums; }
+.s-stat span { font-size:10.5px; color: var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+.sortie-note {
+  flex-basis:100%; width:100%; font-size:12.5px; color: var(--ink-2);
+  padding-top:9px; margin-top:2px; border-top:1px solid var(--grid); order:5;
+}
+.sortie-del { flex:none; margin-left:auto; }
+
+/* ---------- Hero (accueil) ---------- */
+.hero {
+  position:relative; overflow:hidden; border-radius:22px; margin:22px 0 8px;
+  border:1px solid var(--border); box-shadow: var(--shadow);
+  /* Couleurs fixes (indépendantes du thème) : le texte blanc reste lisible
+     en clair comme en sombre. */
+  background:
+    radial-gradient(120% 140% at 12% 0%, rgba(88,158,240,.45), transparent 60%),
+    radial-gradient(120% 130% at 100% 100%, rgba(8,26,58,.55), transparent 55%),
+    linear-gradient(135deg, #0d366b, #2a78d6);
+}
+.hero::after {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(color-mix(in srgb, #fff 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, #fff 8%, transparent) 1px, transparent 1px);
+  background-size: 34px 34px; mask-image: radial-gradient(80% 80% at 50% 20%, #000, transparent);
+  opacity:.5;
+}
+.hero-inner { position:relative; z-index:1; padding:52px 40px 44px; color:#fff; }
+.hero-label {
+  display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600;
+  letter-spacing:.02em; padding:6px 13px; border-radius:999px; margin-bottom:18px;
+  background: rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28); backdrop-filter: blur(4px);
+}
+.hero-label i { width:7px; height:7px; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.3); }
+.hero h1 { font-size: clamp(30px, 5vw, 50px); line-height:1.04; font-weight:800; letter-spacing:-.03em; }
+.hero-accent { color: #bcd8fb; display:block; }
+.hero-sub { margin:16px 0 0; max-width:640px; font-size:15.5px; line-height:1.6; color: rgba(255,255,255,.9); }
+.hero-sub strong { color:#fff; font-weight:700; }
+.hero-cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:24px; }
+.hero-cta .btn { border-color: rgba(255,255,255,.35); }
+.btn.on-hero { background: rgba(255,255,255,.14); color:#fff; }
+.btn.on-hero:hover { background: rgba(255,255,255,.24); }
+.btn.hero-primary { background:#fff; color: #0d366b; border-color:#fff; font-weight:600; }
+.btn.hero-primary:hover { background: rgba(255,255,255,.88); }
+
+.hero-stats {
+  position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:8px 0;
+  padding:0 40px 40px; margin-top:-6px;
+}
+.hstat { flex:1; min-width:120px; padding:0 8px; color:#fff; }
+.hstat-num { display:block; font-size: clamp(26px, 4vw, 38px); font-weight:800; letter-spacing:-.03em; font-variant-numeric: tabular-nums; }
+.hstat-label { font-size:12.5px; color: rgba(255,255,255,.82); font-weight:500; }
+.hstat-sep { width:1px; align-self:center; height:38px; background: rgba(255,255,255,.22); flex:none; }
+
+/* ---------- Section header (style modèle) ---------- */
+.section-header { text-align:center; max-width:640px; margin:44px auto 24px; }
+.section-header h2 { font-size:26px; letter-spacing:-.02em; }
+.section-header p { margin:8px 0 0; font-size:14px; color: var(--muted); }
+
+/* ---------- Présentation de l'équipe ---------- */
+.present {
+  display:grid; grid-template-columns: 1.1fr .9fr; gap:18px; align-items:stretch;
+}
+.present .panel { display:flex; flex-direction:column; justify-content:center; }
+.present p { font-size:14.5px; line-height:1.7; color: var(--ink-2); margin:0 0 12px; }
+.present p:last-child { margin-bottom:0; }
+.present .lead { font-size:16px; color: var(--ink); font-weight:500; }
+.values { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+.values li { display:flex; gap:12px; align-items:flex-start; }
+.values .v-ico {
+  width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center;
+  background: var(--brand-soft); color: var(--seq-700); font-size:19px;
+}
+.values .v-t { font-weight:600; font-size:14px; }
+.values .v-d { font-size:12.5px; color: var(--muted); margin-top:1px; }
+
+/* ---------- Galerie photos ---------- */
+.gallery { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+.shot {
+  position:relative; border-radius:14px; overflow:hidden; aspect-ratio: 4/3;
+  border:1px solid var(--border); box-shadow: var(--shadow); background: var(--surface-2);
+  display:block;
+}
+.shot:nth-child(4n+1) { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+.shot img { width:100%; height:100%; object-fit:cover; display:block; }
+.shot.ph {
+  display:grid; place-items:center; color: var(--muted);
+  background:
+    radial-gradient(120% 120% at 30% 0%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 60%),
+    var(--surface-2);
+}
+.shot.ph .ph-ico { font-size:30px; opacity:.6; }
+.shot .cap {
+  position:absolute; left:0; right:0; bottom:0; padding:14px 14px 11px;
+  font-size:12.5px; color:#fff; font-weight:500;
+  background: linear-gradient(transparent, rgba(0,0,0,.62));
+}
+.shot.ph .cap { color: var(--ink-2); background:none; position:static; text-align:center; padding:8px 10px 0; }
+.gallery-hint {
+  margin:14px 0 0; font-size:12.5px; color: var(--muted);
+  display:flex; gap:9px; align-items:flex-start;
+}
+.gallery-hint code { background: var(--surface-2); padding:1px 6px; border-radius:5px; font-size:11.5px; }
+
+/* ---------- Membres en ligne (barre du haut) ---------- */
+.presence { position:relative; }
+.presence-btn {
+  display:inline-flex; align-items:center; gap:7px; cursor:pointer; font: inherit; color: var(--ink);
+  background: var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:4px 12px 4px 10px; box-shadow: var(--shadow);
+}
+.presence-btn:hover { background: var(--surface-2); }
+.presence-dot { width:8px; height:8px; border-radius:50%; background: var(--good); flex:none; box-shadow:0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); }
+.presence-avs { display:inline-flex; }
+.presence-avs .p-av {
+  width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
+  background: var(--brand-soft); color: var(--seq-700); font-weight:650; font-size:10px;
+  border:2px solid var(--surface); margin-left:-8px;
+}
+.presence-avs .p-av:first-child { margin-left:0; }
+.presence-avs:empty { display:none; }
+.presence-count { font-size:13.5px; font-weight:650; font-variant-numeric: tabular-nums; }
+.presence-word { font-size:12.5px; color: var(--muted); }
+
+.presence-pop {
+  position:absolute; top:calc(100% + 8px); right:0; z-index:60;
+  width:240px; max-height:340px; overflow-y:auto;
+  background: var(--surface); border:1px solid var(--border); border-radius:12px;
+  box-shadow: var(--shadow); padding:6px;
+}
+.presence-pop[hidden] { display:none; }
+.presence-pop .pp-head { font-size:11px; color: var(--muted); text-transform:uppercase; letter-spacing:.04em; padding:7px 8px 6px; }
+.pp-row { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:9px; }
+.pp-row:hover { background: var(--surface-2); }
+.pp-av { position:relative; width:28px; height:28px; flex:none; display:grid; place-items:center; border-radius:50%; background: var(--brand-soft); color: var(--seq-700); font-weight:650; font-size:11px; }
+.pp-av .d { position:absolute; right:-1px; bottom:-1px; width:9px; height:9px; border-radius:50%; background: var(--good); border:2px solid var(--surface); }
+.pp-name { font-size:13.5px; font-weight:500; }
+.pp-name .moi { color: var(--muted); font-weight:400; font-size:11.5px; margin-left:3px; }
+.pp-empty { padding:14px 8px; color: var(--muted); font-size:13px; text-align:center; }
+@media (max-width: 640px) { .presence-word { display:none; } }
+
+/* ---------- Membres par ville (menu déroulant) ---------- */
+.ville-pick { display:flex; flex-wrap:wrap; align-items:center; gap:16px; }
+.ville-field { flex:0 0 auto; }
+.ville-field select { min-width:200px; font-size:14px; }
+.ville-info { flex:1; min-width:220px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.ville-info .vi-num { font-size:30px; font-weight:700; letter-spacing:-.02em; line-height:1; font-variant-numeric: tabular-nums; }
+.ville-info .vi-lab { font-size:12.5px; color: var(--muted); }
+.ville-info .vi-lab b { color: var(--good-text); font-weight:600; }
+.vi-stat { display:flex; gap:8px; flex-wrap:wrap; }
+.vi-chip { display:inline-flex; align-items:center; gap:6px; font-size:12px; color: var(--ink-2); background: var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:3px 10px; }
+.vi-chip i { width:8px; height:8px; border-radius:50%; flex:none; }
+.vi-empty { color: var(--muted); font-size:13px; }
+
+/* ---------- Retraites ---------- */
+.retraite {
+  border:1px solid var(--border); background: var(--surface); border-radius:14px;
+  box-shadow: var(--shadow); margin-bottom:12px; overflow:hidden;
+  border-left:4px solid var(--axis);   /* accent coloré selon l'état */
+}
+/* À venir : accent vert + léger fond vert */
+.retraite.r-avenir {
+  border-left-color: var(--good);
+  background: color-mix(in srgb, var(--good) 6%, var(--surface));
+}
+/* Passée : accent gris neutre */
+.retraite.r-passee {
+  border-left-color: var(--axis);
+  background: color-mix(in srgb, var(--muted) 6%, var(--surface));
+}
+.retraite.r-avenir .retraite-when { background: linear-gradient(140deg, var(--good), #0a7a0a); }
+.retraite.r-passee .retraite-when { background: linear-gradient(140deg, #8a8a86, #55554f); }
+.retraite-top { display:flex; align-items:center; gap:14px; padding:15px 16px; }
+.retraite-when {
+  flex:none; text-align:center; min-width:60px; padding:8px 10px; border-radius:11px;
+  background: linear-gradient(140deg, #2a78d6, #0d366b); color:#fff; line-height:1.1;
+}
+.retraite-when .d { font-size:21px; font-weight:800; letter-spacing:-.02em; }
+.retraite-when .m { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; opacity:.92; }
+.retraite-when .y { font-size:10.5px; opacity:.8; }
+.retraite-main { min-width:0; flex:1; }
+.retraite-main .r-titre { font-weight:650; font-size:16px; letter-spacing:-.01em; }
+.retraite-main .r-meta { font-size:12.5px; color: var(--muted); margin-top:2px; }
+.retraite-tag {
+  flex:none; font-size:11px; font-weight:650; padding:4px 10px; border-radius:999px;
+  background: color-mix(in srgb, var(--good) 20%, transparent); color: var(--good-text);
+}
+.retraite-tag.past { background: var(--surface-2); color: var(--muted); }
+.retraite-body { padding:0 16px 15px; border-top:1px solid var(--grid); }
+.retraite-body .r-theme { font-size:13.5px; color: var(--ink-2); margin:12px 0 0; }
+.retraite-body .r-theme b { color: var(--ink); }
+.retraite-body .r-note { font-size:13px; color: var(--ink-2); margin:9px 0 0; white-space:pre-wrap; }
+.retraite-stats { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.retraite-photos { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.retraite-photos .rp { display:block; width:96px; height:72px; border-radius:9px; overflow:hidden; border:1px solid var(--border); background: var(--surface-2); }
+.retraite-photos .rp img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .2s ease; }
+.retraite-photos .rp:hover img { transform: scale(1.06); }
+.edit-photos { display:flex; gap:8px; flex-wrap:wrap; }
+.edit-photo { position:relative; width:72px; height:56px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+.edit-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+.edit-photo-rm {
+  position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:50%;
+  border:0; background: rgba(11,11,11,.62); color:#fff; font-size:12px; line-height:1; cursor:pointer;
+  display:grid; place-items:center;
+}
+.edit-photo-rm:hover { background: var(--critical); }
+.retraite-foot { display:flex; align-items:center; gap:12px; margin-top:12px; }
+.retraite-foot .r-part { font-size:12.5px; color: var(--muted); }
+.retraite-foot .sortie-del { margin-left:auto; }
+
+@media (max-width: 900px) {
+  .present { grid-template-columns: 1fr; }
+  .gallery { grid-template-columns: repeat(2, 1fr); }
+  .shot:nth-child(4n+1) { grid-column: span 2; grid-row: auto; aspect-ratio: 16/9; }
+  .hero-inner { padding:40px 24px 32px; }
+  .hero-stats { padding:0 24px 30px; }
+  .hstat-sep { display:none; }
+  .hstat { min-width: 45%; }
+}
+@media (max-width: 560px) {
+  .gallery { grid-template-columns: 1fr; }
+  .shot:nth-child(4n+1) { grid-column: auto; }
+}
 </style>
 </head>
 <body>
@@ -595,6 +954,16 @@ header.top {
 
     <span class="live wait" id="live" title="État de la liaison temps réel"><i></i><span id="liveTxt">Liaison…</span></span>
 
+    <div class="presence" id="presence">
+      <button class="presence-btn" id="presenceBtn" type="button" aria-label="Membres en ligne" title="Membres en ligne">
+        <span class="presence-dot"></span>
+        <span class="presence-avs" id="presenceAvs"></span>
+        <span class="presence-count" id="presenceCount">0</span>
+        <span class="presence-word">en ligne</span>
+      </button>
+      <div class="presence-pop" id="presencePop" hidden></div>
+    </div>
+
     <div class="who">
       <span class="who-av" id="meAv">?</span>
       <span class="who-name" id="meName">—</span>
@@ -613,104 +982,376 @@ header.top {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5h.01M12 12h.01M12 19h.01"/></svg>
     </button>
   </div>
+
+  <nav class="mainnav" id="mainnav" role="tablist" aria-label="Sections">
+    <button class="navlink on" type="button" data-view="accueil" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+      Accueil
+    </button>
+    <button class="navlink" type="button" data-view="effectifs" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.2a3.2 3.2 0 0 1 0 6M18 20c0-2.7-1-4.3-3-5"/></svg>
+      Effectifs
+    </button>
+    <button class="navlink" type="button" data-view="prier" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z"/></svg>
+      Prier
+    </button>
+    <button class="navlink" type="button" data-view="evangelisation" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4v16"/><path d="M4 5h11l-1.5 3L15 11H4"/></svg>
+      Évangélisation
+    </button>
+    <button class="navlink" type="button" data-view="retraites" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 21 9-15 9 15"/><path d="M9 13.5h6"/><path d="M12 6V3"/></svg>
+      Retraites
+    </button>
+  </nav>
 </header>
 
 <div class="wrap" hidden>
 
-  <section class="kpis">
-    <div class="kpi">
-      <div class="k-label">Membres</div>
-      <div class="k-value" id="kpiTotal">—</div>
-      <div class="k-sub" id="kpiTotalSub">—</div>
+  <!-- ============================ ACCUEIL ============================ -->
+  <section class="view" id="viewAccueil">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-label"><i></i> Équipe MBOCK · France</div>
+        <h1>Une équipe,<br><span class="hero-accent">plusieurs villes, une mission.</span></h1>
+        <p class="hero-sub">Nous sommes l'équipe <strong>MBOCK</strong> : des frères et sœurs répartis dans toute la France, unis pour <strong>évangéliser</strong>, <strong>accompagner</strong> chaque personne rencontrée et <strong>prier</strong> les uns pour les autres. Ce tableau de bord rassemble notre vie d'équipe, en temps réel.</p>
+        <div class="hero-cta">
+          <button class="btn hero-primary" type="button" data-goto="effectifs">Voir les effectifs</button>
+          <button class="btn on-hero" type="button" data-goto="evangelisation">Nos sorties</button>
+          <button class="btn on-hero" type="button" data-goto="prier">Sujets de prière</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><span class="hstat-num" id="heroMembres">0</span><span class="hstat-label">Membres suivis</span></div>
+        <div class="hstat-sep"></div>
+        <div class="hstat"><span class="hstat-num" id="heroVilles">0</span><span class="hstat-label">Villes actives</span></div>
+        <div class="hstat-sep"></div>
+        <div class="hstat"><span class="hstat-num" id="heroSorties">0</span><span class="hstat-label">Sorties d'évangélisation</span></div>
+        <div class="hstat-sep"></div>
+        <div class="hstat"><span class="hstat-num" id="heroPrieres">0</span><span class="hstat-label">Sujets de prière en cours</span></div>
+      </div>
+    </section>
+
+    <!-- PRÉSENTATION -->
+    <div class="section-header">
+      <h2>Qui sommes-nous</h2>
+      <p>Une famille spirituelle qui grandit, ville après ville.</p>
     </div>
-    <div class="kpi">
-      <div class="k-label">Nouveaux (30 j)</div>
-      <div class="k-value" id="kpiNouveaux">—</div>
-      <div class="k-sub" id="kpiNouveauxSub">—</div>
+    <section class="present">
+      <div class="panel">
+        <p class="lead">L'équipe MBOCK est née d'un désir simple : partager l'Évangile là où nous vivons, et ne laisser personne seul sur le chemin.</p>
+        <p>De Grenoble à Lille, de Bordeaux à Strasbourg, chaque ville a son groupe local. Nous sortons à la rencontre des gens, nous accueillons les nouveaux, nous les accompagnons pas à pas — <i>Nouveau</i>, <i>En intégration</i>, puis <i>Membre</i> — et nous portons ensemble leurs besoins dans la prière.</p>
+        <p>Cet espace est notre mémoire commune : qui a été rencontré, où en est chacun, ce que Dieu répond. Tout ce que vous ajoutez est visible aussitôt par toute l'équipe.</p>
+      </div>
+      <div class="panel">
+        <ul class="values">
+          <li><span class="v-ico">📖</span><div><div class="v-t">Évangéliser</div><div class="v-d">Sortir, rencontrer, annoncer la bonne nouvelle.</div></div></li>
+          <li><span class="v-ico">🤝</span><div><div class="v-t">Accompagner</div><div class="v-d">Suivre chaque personne jusqu'à l'intégration.</div></div></li>
+          <li><span class="v-ico">🙏</span><div><div class="v-t">Prier</div><div class="v-d">Porter les besoins de tous, célébrer les exaucements.</div></div></li>
+          <li><span class="v-ico">🏔️</span><div><div class="v-t">Se retrouver</div><div class="v-d">Des retraites pour se ressourcer et grandir ensemble.</div></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- GALERIE -->
+    <div class="section-header">
+      <h2>L'équipe en images</h2>
+      <p>Sorties, rencontres, retraites — quelques moments de notre vie d'équipe.</p>
     </div>
-    <div class="kpi">
-      <div class="k-label">À relancer</div>
-      <div class="k-value" id="kpiRelance">—</div>
-      <div class="k-sub" id="kpiRelanceSub">—</div>
-    </div>
-    <div class="kpi">
-      <div class="k-label">Sujets de prière</div>
-      <div class="k-value" id="kpiPriere">—</div>
-      <div class="k-sub" id="kpiPriereSub">—</div>
-    </div>
+    <div class="gallery" id="gallery"></div>
+    <p class="gallery-hint">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M21 15l-5-5L5 21"/><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+      <span>Pour afficher vos vraies photos : placez-les dans un dossier <code>images/</code> à côté de <code>index.html</code>, puis renseignez la liste <code>PHOTOS</code> en haut du script (chemin ou lien, et légende).</span>
+    </p>
+
   </section>
 
-  <section class="panel" style="margin-bottom:14px">
-    <div class="panel-head">
-      <h2>Où en est l'équipe</h2>
-      <span class="hint">Cliquez un statut pour filtrer</span>
+  <!-- ============================ EFFECTIFS ============================ -->
+  <section class="view" id="viewEffectifs" hidden>
+    <div class="view-head">
+      <div class="grow">
+        <h2>Effectifs</h2>
+        <p>Les membres de l'équipe, ville par ville.</p>
+      </div>
+      <button class="btn primary" id="btnAdd2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nouveau membre
+      </button>
     </div>
-    <p class="panel-sub">Répartition des membres par étape de suivi.</p>
-    <div class="stack" id="statutStack"></div>
-    <div class="legend" id="statutLegend"></div>
-  </section>
 
-  <section class="grid-2">
-    <div class="panel">
+    <section class="panel" style="margin:16px 0 4px">
       <div class="panel-head">
         <h2>Membres par ville</h2>
-        <span class="hint">Survolez une barre</span>
+        <span class="hint">Choisissez une ville</span>
       </div>
-      <p class="panel-sub">Barre pleine : membres enregistrés. Trait clair : effectif recensé restant à saisir.</p>
-      <div class="legend">
-        <span><i class="swatch" style="background:var(--brand)"></i> Enregistrés</span>
-        <span><i class="swatch" style="background:var(--brand-soft)"></i> Restant à saisir</span>
+      <p class="panel-sub">Sélectionnez une ville pour voir son effectif et filtrer la liste ci-dessous.</p>
+      <div class="ville-pick">
+        <div class="field ville-field">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          <select id="villeSelect"></select>
+        </div>
+        <div class="ville-info" id="villeInfo"></div>
       </div>
-      <div class="bars" id="bars"></div>
-    </div>
+    </section>
 
-    <div class="panel">
+    <section class="grid-2" style="margin:14px 0">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Évolution de l'équipe</h2>
+          <span class="hint">Membres cumulés</span>
+        </div>
+        <p class="panel-sub">Total de membres enregistrés au fil des années (date de rencontre).</p>
+        <div class="chart-holder"><svg id="evoSvg" role="img" aria-label="Courbe d'évolution cumulée des membres par année"></svg></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Nouveaux membres par année</h2>
+          <span class="hint">Survolez une barre</span>
+        </div>
+        <p class="panel-sub">Nombre de personnes rencontrées chaque année.</p>
+        <div class="chart-holder"><svg id="yearSvg" role="img" aria-label="Nouveaux membres par année"></svg></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-bottom:14px">
       <div class="panel-head">
-        <h2>Carte de l'équipe</h2>
-        <span class="hint">Taille = membres</span>
+        <h2>Carte de répartition</h2>
+        <span class="hint">Taille = membres · cliquez une ville</span>
       </div>
-      <p class="panel-sub">Positions réelles des villes (WGS84) ; fond de carte schématique.</p>
-      <div class="map-holder"><svg id="mapSvg" viewBox="0 0 400 400" role="img" aria-label="Carte de répartition des membres en France"></svg></div>
+      <p class="panel-sub">Où se trouvent les membres de l'équipe en France (positions réelles WGS84).</p>
+      <div class="map-holder map-wide"><svg id="mapSvgEff" viewBox="0 0 400 400" role="img" aria-label="Carte de répartition des membres en France"></svg></div>
+    </section>
+
+    <div class="filters">
+      <div class="field">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Rechercher un nom, une ville…" autocomplete="off">
+      </div>
+      <div class="field">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+        <select id="fVille"></select>
+      </div>
+      <div class="field">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <select id="fStatut">
+          <option value="">Tous les statuts</option>
+          <option>Nouveau</option>
+          <option>En intégration</option>
+          <option>Membre</option>
+          <option>À relancer</option>
+        </select>
+      </div>
+      <span class="count" id="resCount"></span>
     </div>
+
+    <section id="list"></section>
+
+    <p class="note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span><b>Base partagée en temps réel.</b> Tout ce que vous ajoutez apparaît immédiatement chez les autres membres de l'équipe, dans toutes les villes. Les effectifs de référence des 22 villes proviennent du fichier <i>Liste des membres de l'équipe Mbock.xlsx</i>.</span>
+    </p>
   </section>
 
-  <section class="panel" style="margin-top:14px">
-    <div class="panel-head">
-      <h2>Sujets de prière en cours</h2>
-      <span class="hint" id="prayCount"></span>
+  <!-- ============================ PRIER ============================ -->
+  <section class="view" id="viewPrier" hidden>
+    <div class="view-head">
+      <div class="grow">
+        <h2>Prier</h2>
+        <p>Portons ensemble les besoins confiés par l'équipe et les personnes rencontrées.</p>
+      </div>
     </div>
-    <p class="panel-sub">Cliquez un sujet pour ouvrir la fiche et donner des nouvelles.</p>
-    <div class="pray-list" id="prayList"></div>
+
+    <section class="kpis" style="margin:18px 0 20px">
+      <div class="kpi">
+        <div class="k-label">Sujets en cours</div>
+        <div class="k-value" id="kpiPrEnCours">—</div>
+        <div class="k-sub" id="kpiPrEnCoursSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Sujets exaucés</div>
+        <div class="k-value" id="kpiPrExauces">—</div>
+        <div class="k-sub" id="kpiPrExaucesSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Heures de prière</div>
+        <div class="k-value" id="kpiHeures">—</div>
+        <div class="k-sub" id="kpiHeuresSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Heures ce mois</div>
+        <div class="k-value" id="kpiHeuresMois">—</div>
+        <div class="k-sub" id="kpiHeuresMoisSub">—</div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <h2>Ajouter un sujet de prière</h2>
+      </div>
+      <p class="panel-sub">Un besoin de l'équipe, ou lié à une personne précise. Visible aussitôt par tous.</p>
+      <form id="prForm" class="pr-form">
+        <input id="prTexte" type="text" placeholder="Ex. Guérison de la maman de Paul, unité de l'équipe…" autocomplete="off" required>
+        <input id="prMembre" type="text" list="dlNoms" placeholder="Lier à une personne (facultatif)" autocomplete="off">
+        <button class="btn primary" type="submit">Ajouter</button>
+      </form>
+      <div class="err" id="prErr"></div>
+    </section>
+
+    <section class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <h2>Sujets de prière en cours</h2>
+        <span class="hint" id="prayCount"></span>
+      </div>
+      <p class="panel-sub">Marquez « exaucé » quand Dieu répond, ou ouvrez la fiche d'une personne liée.</p>
+      <div class="pray-list" id="prayList" style="max-height:none"></div>
+    </section>
+
+    <section class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <h2>Sujets exaucés</h2>
+        <span class="hint" id="prayDoneCount"></span>
+      </div>
+      <p class="panel-sub">Ce que Dieu a déjà répondu — de quoi rendre grâce.</p>
+      <div class="pray-list" id="prayDone" style="max-height:none"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Heures de prière</h2>
+        <span class="hint" id="heuresCount"></span>
+      </div>
+      <p class="panel-sub">Créez des objectifs nommés ; chaque temps de prière compte pour l'objectif choisi.</p>
+
+      <!-- Créer un objectif -->
+      <form id="objForm" class="pr-form">
+        <input id="objNom" type="text" placeholder="Nom de l'objectif (ex. Veillée de Noël)" autocomplete="off" required>
+        <input id="objCible" type="number" min="0" step="1" inputmode="numeric" placeholder="Heures visées (ex. 20)">
+        <button class="btn" type="submit">+ Nouvel objectif</button>
+      </form>
+      <div class="err" id="objErr"></div>
+
+      <!-- Liste des objectifs, chacun avec sa progression -->
+      <div id="objList" class="obj-list"></div>
+
+      <!-- Ajouter des heures -->
+      <h3 class="pr-subhead" id="heureSubhead">Ajouter des heures</h3>
+      <form id="heureForm" class="pr-form">
+        <input id="heureNb" type="number" min="0" step="0.5" inputmode="decimal" placeholder="Nombre d'heures (ex. 3)">
+        <span class="pr-ou">— ou —</span>
+        <label class="pr-field"><span>Début</span><input id="heureDebut" type="time"></label>
+        <label class="pr-field"><span>Fin</span><input id="heureFin" type="time"></label>
+        <label class="pr-field"><span>Objectif</span><select id="heureObjectif"></select></label>
+        <button class="btn primary" type="submit">+ Ajouter</button>
+      </form>
+      <div class="heure-live" id="heureLive"></div>
+      <div class="err" id="heureErr"></div>
+      <div class="heure-actions">
+        <button class="btn sm ghost" id="btnResetHeures" type="button">⟲ Remettre le total des heures à zéro</button>
+      </div>
+      <div id="heureLog" class="heure-log"></div>
+    </section>
   </section>
 
-  <div class="filters">
-    <div class="field">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Rechercher un nom, une ville…" autocomplete="off">
+  <!-- ============================ ÉVANGÉLISATION ============================ -->
+  <section class="view" id="viewEvangelisation" hidden>
+    <div class="view-head">
+      <div class="grow">
+        <h2>Évangélisation</h2>
+        <p>Le journal des sorties : où l'équipe est allée, qui elle a rencontré.</p>
+      </div>
+      <button class="btn primary" id="btnAddSortie">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nouvelle sortie
+      </button>
     </div>
-    <div class="field">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
-      <select id="fVille"></select>
-    </div>
-    <div class="field">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-      <select id="fStatut">
-        <option value="">Tous les statuts</option>
-        <option>Nouveau</option>
-        <option>En intégration</option>
-        <option>Membre</option>
-        <option>À relancer</option>
-      </select>
-    </div>
-    <span class="count" id="resCount"></span>
-  </div>
 
-  <section id="list"></section>
+    <section class="kpis" style="margin:18px 0 20px">
+      <div class="kpi">
+        <div class="k-label">Sorties</div>
+        <div class="k-value" id="kpiSorties">—</div>
+        <div class="k-sub" id="kpiSortiesSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Personnes rencontrées</div>
+        <div class="k-value" id="kpiContacts">—</div>
+        <div class="k-sub" id="kpiContactsSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Décisions</div>
+        <div class="k-value" id="kpiDecisions">—</div>
+        <div class="k-sub" id="kpiDecisionsSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Sorties ce mois</div>
+        <div class="k-value" id="kpiSortiesMois">—</div>
+        <div class="k-sub" id="kpiSortiesMoisSub">—</div>
+      </div>
+    </section>
 
-  <p class="note">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
-    <span><b>Base partagée en temps réel.</b> Tout ce que vous ajoutez apparaît immédiatement chez les autres membres de l'équipe, dans toutes les villes. Les effectifs de référence des 22 villes proviennent du fichier <i>Liste des membres de l'équipe Mbock.xlsx</i>.</span>
-  </p>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Journal des sorties</h2>
+        <span class="hint" id="sortieCount"></span>
+      </div>
+      <p class="panel-sub">De la plus récente à la plus ancienne.</p>
+      <div id="sortieList"></div>
+    </section>
+  </section>
+
+  <!-- ============================ RETRAITES ============================ -->
+  <section class="view" id="viewRetraites" hidden>
+    <div class="view-head">
+      <div class="grow">
+        <h2>Retraites d'équipe</h2>
+        <p>Nos temps de ressourcement : à venir et déjà vécus.</p>
+      </div>
+      <button class="btn primary" id="btnAddRetraite">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nouvelle retraite
+      </button>
+    </div>
+
+    <section class="kpis" style="margin:18px 0 20px">
+      <div class="kpi">
+        <div class="k-label">Retraites</div>
+        <div class="k-value" id="kpiRetraites">—</div>
+        <div class="k-sub" id="kpiRetraitesSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Prochaine retraite</div>
+        <div class="k-value" id="kpiProchaine" style="font-size:22px">—</div>
+        <div class="k-sub" id="kpiProchaineSub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Participants (cumul)</div>
+        <div class="k-value" id="kpiParticipants">—</div>
+        <div class="k-sub" id="kpiParticipantsSub">—</div>
+      </div>
+    </section>
+
+    <section class="panel" id="retraitesAvenirPanel" hidden style="margin-bottom:14px">
+      <div class="panel-head">
+        <h2>À venir</h2>
+        <span class="hint" id="retraiteAvenirCount"></span>
+      </div>
+      <p class="panel-sub">Prépare tes bagages : ces retraites arrivent.</p>
+      <div id="retraiteAvenir"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Retraites passées</h2>
+        <span class="hint" id="retraitePasseCount"></span>
+      </div>
+      <p class="panel-sub">Ce que nous avons déjà vécu ensemble.</p>
+      <div id="retraitePasse"></div>
+    </section>
+  </section>
+
 </div>
 
 <datalist id="dlNoms"></datalist>
@@ -788,6 +1429,54 @@ header.top {
   <div class="modal-foot"><button class="btn ghost" id="dataClose">Fermer</button></div>
 </div>
 
+<div class="modal" id="sortieModal" role="dialog" aria-modal="true" aria-labelledby="sortieTitle">
+  <h2 id="sortieTitle">Enregistrer une sortie</h2>
+  <p class="m-hint">Racontez la sortie d'évangélisation : toute l'équipe la verra aussitôt.</p>
+  <form id="sortieForm">
+    <div class="form-grid">
+      <label class="inp"><span>Date *</span><input name="date" type="date" required></label>
+      <label class="inp"><span>Ville *</span><select name="ville" id="sortieVille" required></select></label>
+      <label class="inp" id="wrapSortieVille" style="display:none"><span>Nom de la nouvelle ville</span><input name="nouvelleVille" autocomplete="off" placeholder="ex. Toulouse"></label>
+      <label class="inp full"><span>Lieu</span><input name="lieu" autocomplete="off" placeholder="Quartier, place, campus…"></label>
+      <label class="inp"><span>Évangélistes</span><input name="equipe" type="number" min="0" inputmode="numeric" placeholder="ex. 5"></label>
+      <label class="inp"><span>Personnes rencontrées</span><input name="contacts" type="number" min="0" inputmode="numeric" placeholder="ex. 14"></label>
+      <label class="inp"><span>Décisions</span><input name="decisions" type="number" min="0" inputmode="numeric" placeholder="ex. 2"></label>
+      <label class="inp full"><span>Compte-rendu (facultatif)</span><textarea name="note" placeholder="Faits marquants, personnes à recontacter, sujets de prière…"></textarea></label>
+    </div>
+    <div class="err" id="sortieErr"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="sortieCancel">Annuler</button>
+      <button class="btn primary" type="submit" id="sortieGo">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="retraiteModal" role="dialog" aria-modal="true" aria-labelledby="retraiteTitle">
+  <h2 id="retraiteTitle">Enregistrer une retraite</h2>
+  <p class="m-hint">Un temps de ressourcement, à venir ou déjà vécu.</p>
+  <form id="retraiteForm">
+    <div class="form-grid">
+      <label class="inp full"><span>Titre *</span><input name="titre" required autocomplete="off" placeholder="ex. Retraite d'été 2026"></label>
+      <label class="inp"><span>Date de début *</span><input name="debut" type="date" required></label>
+      <label class="inp"><span>Date de fin</span><input name="fin" type="date"></label>
+      <label class="inp full"><span>Lieu</span><input name="lieu" autocomplete="off" placeholder="ex. Chalet des Alpes, Annecy"></label>
+      <label class="inp"><span>Participants</span><input name="participants" type="number" min="0" inputmode="numeric" placeholder="ex. 40"></label>
+      <label class="inp"><span>Invités</span><input name="invites" type="number" min="0" inputmode="numeric" placeholder="ex. 12"></label>
+      <label class="inp"><span>Conversions</span><input name="conversions" type="number" min="0" inputmode="numeric" placeholder="ex. 5"></label>
+      <label class="inp"><span>Baptêmes</span><input name="baptemes" type="number" min="0" inputmode="numeric" placeholder="ex. 3"></label>
+      <label class="inp"><span>Thème</span><input name="theme" autocomplete="off" placeholder="ex. Enracinés dans l'amour"></label>
+      <label class="inp full"><span>Programme / note (facultatif)</span><textarea name="note" placeholder="Orateurs, ateliers, temps forts, infos pratiques…"></textarea></label>
+      <div class="inp full" id="retraiteImagesWrap" hidden><span>Photos actuelles (cliquez ✕ pour retirer)</span><div id="retraiteImagesActuelles" class="edit-photos"></div></div>
+      <label class="inp full"><span>Ajouter des photos</span><input name="images" id="retraiteImages" type="file" accept="image/*" multiple></label>
+    </div>
+    <div class="err" id="retraiteErr"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="retraiteCancel">Annuler</button>
+      <button class="btn primary" type="submit" id="retraiteGo">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 "use strict";
@@ -829,11 +1518,25 @@ function daysAgo(iso) {
 }
 
 /* ======================= État ======================= */
-const ETAT = { villes: [], membres: [], commentaires: [], prieres: [], profils: [] };
+const ETAT = { villes: [], membres: [], commentaires: [], prieres: [], profils: [], sorties: [], retraites: [], priere_heures: [], parametres: [], objectifs: [] };
 let moi = null;            // { id, nom, role }
 let sb = null;
 let openId = null, hi = null;
+let vueActive = "accueil";
+let enLigne = [];              // membres connectés (présence temps réel)
+let canalPresence = null;
 const filters = { q:"", ville:"", statut:"" };
+
+/* =======================================================================
+   PHOTOS DE L'ÉQUIPE — page d'accueil.
+   Placez vos images dans un dossier « images/ » à côté de index.html,
+   puis listez-les ci-dessous : { src: "images/sortie-paris.jpg", cap: "..." }.
+   Laissez la liste vide pour afficher des emplacements de démonstration.
+   ======================================================================= */
+const PHOTOS = [
+  // { src: "images/equipe-1.jpg", cap: "Retraite d'été à Annecy" },
+  // { src: "images/sortie-lyon.jpg", cap: "Sortie d'évangélisation — Lyon" },
+];
 
 const commentairesDe = id => ETAT.commentaires.filter(c => c.membre_id === id);
 const prieresDe      = id => ETAT.prieres.filter(p => p.membre_id === id);
@@ -911,8 +1614,124 @@ function countByStatut(list) {
   return o;
 }
 
+/* ======================= Hero (compteurs animés) ======================= */
+function animateCount(node, to) {
+  if (!node) return;
+  const from = parseInt(node.textContent.replace(/\s/g, ""), 10) || 0;
+  if (from === to) { node.textContent = to; return; }
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { node.textContent = to; return; }
+  const t0 = performance.now(), dur = 700;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - k, 3);
+    node.textContent = Math.round(from + (to - from) * eased);
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function renderHero() {
+  const cs = citiesSorted();
+  animateCount($("#heroMembres"), ETAT.membres.length);
+  animateCount($("#heroVilles"),  cs.filter(c => c.fiches > 0).length);
+  animateCount($("#heroSorties"), ETAT.sorties.length);
+  animateCount($("#heroPrieres"), ETAT.prieres.filter(p => !p.exauce).length);
+}
+
+/* ======================= Membres en ligne (présence) ======================= */
+function renderEnLigne() {
+  const cnt = $("#presenceCount");
+  if (!cnt) return;
+  const gens = enLigne.slice().sort((a, b) => (a.nom || "").localeCompare(b.nom || "", "fr"));
+  cnt.textContent = gens.length;
+
+  /* Avatars empilés (3 max) dans la barre du haut. */
+  const avs = $("#presenceAvs");
+  avs.innerHTML = "";
+  gens.slice(0, 3).forEach(p => avs.appendChild(el("span", "p-av", inits(p.nom))));
+
+  $("#presenceBtn").title = gens.length
+    ? gens.map(p => p.nom).join(", ")
+    : "Aucun membre en ligne";
+
+  /* Liste déroulante complète. */
+  const pop = $("#presencePop");
+  pop.innerHTML = "";
+  pop.appendChild(el("div", "pp-head", `${gens.length} membre${gens.length > 1 ? "s" : ""} en ligne`));
+  if (!gens.length) {
+    pop.appendChild(el("div", "pp-empty", "Personne d'autre pour l'instant."));
+    return;
+  }
+  gens.forEach(p => {
+    const row = el("div", "pp-row");
+    const av = el("div", "pp-av", inits(p.nom));
+    av.appendChild(el("span", "d"));
+    row.appendChild(av);
+    const nm = el("div", "pp-name");
+    nm.appendChild(document.createTextNode(p.nom || "Membre"));
+    if (moi && p.id === moi.id) nm.appendChild(el("span", "moi", "(vous)"));
+    row.appendChild(nm);
+    pop.appendChild(row);
+  });
+}
+/* Ouvre / ferme la liste des membres en ligne. */
+$("#presenceBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  $("#presencePop").hidden = !$("#presencePop").hidden;
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest("#presence")) $("#presencePop").hidden = true;
+});
+
+/* Suit qui est connecté via la présence temps réel de Supabase. */
+function ecouterPresence() {
+  if (!moi) return;
+  if (canalPresence) sb.removeChannel(canalPresence);
+  canalPresence = sb.channel("presence-mbock", { config: { presence: { key: moi.id } } });
+  canalPresence.on("presence", { event: "sync" }, () => {
+    const state = canalPresence.presenceState();
+    const vus = new Map();
+    Object.values(state).forEach(arr => arr.forEach(p => { if (p.id) vus.set(p.id, p.nom || "Membre"); }));
+    enLigne = [...vus.entries()].map(([id, nom]) => ({ id, nom }));
+    renderEnLigne();
+  });
+  canalPresence.subscribe(async statut => {
+    if (statut === "SUBSCRIBED") {
+      await canalPresence.track({ id: moi.id, nom: moi.nom, at: Date.now() });
+    }
+  });
+}
+
+/* ======================= Galerie photos ======================= */
+function renderGallery() {
+  const host = $("#gallery");
+  if (!host) return;
+  host.innerHTML = "";
+  if (PHOTOS.length) {
+    PHOTOS.forEach(ph => {
+      const a = el("a", "shot");
+      a.href = ph.src; a.target = "_blank"; a.rel = "noopener";
+      const img = el("img");
+      img.src = ph.src; img.alt = ph.cap || "Photo de l'équipe"; img.loading = "lazy";
+      a.appendChild(img);
+      if (ph.cap) a.appendChild(el("span", "cap", ph.cap));
+      host.appendChild(a);
+    });
+    return;
+  }
+  /* Emplacements de démonstration tant qu'aucune photo n'est renseignée. */
+  const demos = ["Sortie d'évangélisation", "Réunion de prière", "Retraite d'équipe",
+                 "Accueil des nouveaux", "Louange", "Moment fraternel"];
+  demos.forEach((cap, i) => {
+    const d = el("div", "shot ph");
+    d.appendChild(el("div", "ph-ico", ["📸","🙏","🏔️","🤝","🎶","🕊️"][i % 6]));
+    d.appendChild(el("span", "cap", cap));
+    host.appendChild(d);
+  });
+}
+
 /* ======================= KPI ======================= */
 function renderKPI() {
+  if (!$("#kpiTotal")) return;
   const cs = citiesSorted();
   const total = ETAT.membres.length;
   const nouveaux = ETAT.membres.filter(m => daysAgo(m.cree_le) <= 30).length;
@@ -933,9 +1752,10 @@ function renderKPI() {
 
 /* ======================= Barre des statuts ======================= */
 function renderStatuts() {
+  const stack = $("#statutStack");
+  if (!stack) return;   // la barre des statuts n'est plus sur l'accueil
   const counts = countByStatut(ETAT.membres);
   const total = ETAT.membres.length || 1;
-  const stack = $("#statutStack");
   stack.innerHTML = "";
   STATUTS.forEach(s => {
     const n = counts[s.nom];
@@ -967,83 +1787,529 @@ function renderStatuts() {
 }
 function filtrerStatut(nom) {
   filters.statut = filters.statut === nom ? "" : nom;
+  allerVers("effectifs");
   syncControls(); renderStatuts(); renderList();
   $("#list").scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
 /* ======================= Sujets de prière ======================= */
+const membreDe = p => (p.membre_id ? ETAT.membres.find(m => m.id === p.membre_id) : null) || null;
+
+async function toggleExauce(p) {
+  const { error } = await sb.from("prieres")
+    .update({ exauce: !p.exauce, exauce_le: !p.exauce ? todayISO() : null })
+    .eq("id", p.id);
+  if (error) { alert("Impossible d'enregistrer : " + error.message); return; }
+  await majTable("prieres");
+}
+async function supprimerPriere(p) {
+  if (!confirm("Supprimer ce sujet de prière ?")) return;
+  const { error } = await sb.from("prieres").delete().eq("id", p.id);
+  if (error) { alert("Suppression refusée : " + error.message); return; }
+  await majTable("prieres");
+}
+
+/* Ligne compacte pour l'accueil (aperçu). */
+function prayRow(m, p) {
+  const row = el("button", "pray-row");
+  row.type = "button";
+  row.appendChild(el("span", "dotb"));
+  const b = el("div", null);
+  b.style.minWidth = "0";
+  b.appendChild(el("div", "pray-text", p.texte));
+  b.appendChild(el("div", "pr-who", m
+    ? `${fullName(m)} · ${m.ville} · depuis le ${fmtDate(p.confie_le)}`
+    : `Sujet d'équipe · depuis le ${fmtDate(p.confie_le)}`));
+  row.appendChild(b);
+  if (m) row.addEventListener("click", () => openMember(m.id));
+  else row.style.cursor = "default";
+  return row;
+}
+
+/* Ligne détaillée avec actions pour la page Prier. */
+function prayLine(m, p, done) {
+  const row = el("div", "pray-line" + (done ? " done" : "") + (m ? " link" : ""));
+  row.appendChild(el("span", "dotb"));
+
+  const body = el("div", "pl-body");
+  const t = el("div", "pl-text");
+  if (!m) { const tag = el("span", "pray-tag-eq", "Équipe"); t.appendChild(tag); }
+  t.appendChild(document.createTextNode(p.texte));
+  body.appendChild(t);
+  body.appendChild(el("div", "pl-who", (m ? `${fullName(m)} · ${m.ville} · ` : "")
+    + `confié par ${p.auteur} le ${fmtDate(p.confie_le)}`
+    + (done ? ` · exaucé le ${fmtDate(p.exauce_le)}` : "")));
+  if (m) body.addEventListener("click", () => openMember(m.id));
+  row.appendChild(body);
+
+  const act = el("div", "pl-act");
+  const bEx = el("button", "btn sm", done ? "Rouvrir" : "Exaucé");
+  bEx.type = "button";
+  bEx.addEventListener("click", async () => { bEx.disabled = true; await toggleExauce(p); bEx.disabled = false; });
+  act.appendChild(bEx);
+  if (suisAdmin() || p.auteur_id === (moi && moi.id)) {
+    const bDel = el("button", "btn sm ghost", "✕");
+    bDel.type = "button"; bDel.title = "Supprimer";
+    bDel.addEventListener("click", () => supprimerPriere(p));
+    act.appendChild(bDel);
+  }
+  row.appendChild(act);
+  return row;
+}
+
 function renderPrieres() {
+  const enCours = ETAT.prieres.filter(p => !p.exauce)
+    .map(p => ({ m: membreDe(p), p }))
+    .sort((a, b) => (b.p.confie_le || "").localeCompare(a.p.confie_le || ""));
+  const exaucesL = ETAT.prieres.filter(p => p.exauce)
+    .map(p => ({ m: membreDe(p), p }))
+    .sort((a, b) => (b.p.exauce_le || "").localeCompare(a.p.exauce_le || ""));
+
+  /* --- KPI (page Prier) --- */
+  if ($("#kpiPrEnCours")) {
+    const eq = enCours.filter(x => !x.m).length;
+    $("#kpiPrEnCours").textContent = enCours.length;
+    $("#kpiPrEnCoursSub").textContent = eq ? `dont ${eq} sujet${eq > 1 ? "s" : ""} d'équipe` : "à porter dans la prière";
+    $("#kpiPrExauces").textContent = exaucesL.length;
+    $("#kpiPrExaucesSub").textContent = exaucesL.length ? "réponses reçues" : "à venir";
+  }
+
+  /* --- Accueil : aperçu des 6 plus récents --- */
+  const home = $("#prayHome");
+  if (home) {
+    home.innerHTML = "";
+    if (!enCours.length) home.appendChild(el("div", "pray-empty", "Aucun sujet de prière en cours."));
+    else enCours.slice(0, 6).forEach(({ m, p }) => home.appendChild(prayRow(m, p)));
+  }
+
+  /* --- Page Prier : sujets en cours --- */
   const host = $("#prayList");
+  if (host) {
+    host.innerHTML = "";
+    $("#prayCount").textContent = enCours.length
+      ? `${enCours.length} en cours · ${exaucesL.length} exaucé${exaucesL.length > 1 ? "s" : ""}` : "";
+    if (!enCours.length) host.appendChild(el("div", "pray-empty", "Aucun sujet en cours. Ajoutez-en un ci-dessus."));
+    else enCours.forEach(({ m, p }) => host.appendChild(prayLine(m, p, false)));
+  }
+
+  /* --- Page Prier : sujets exaucés --- */
+  const done = $("#prayDone");
+  if (done) {
+    done.innerHTML = "";
+    $("#prayDoneCount").textContent = exaucesL.length ? `${exaucesL.length} au total` : "";
+    if (!exaucesL.length) done.appendChild(el("div", "pray-empty", "Aucun sujet exaucé pour l'instant. Continuez à prier !"));
+    else exaucesL.forEach(({ m, p }) => done.appendChild(prayLine(m, p, true)));
+  }
+}
+
+/* ======================= Heures de prière ======================= */
+const fmtH = n => (Math.round(n * 10) / 10).toLocaleString("fr-FR");
+const getParam = cle => { const p = ETAT.parametres.find(x => x.cle === cle); return p ? p.valeur : null; };
+const hhmm = t => (t || "").slice(0, 5);   // "22:00:00" → "22:00"
+
+/* Durée en heures entre deux horaires HH:MM ; passe minuit si fin ≤ début. */
+function dureeHeures(debut, fin) {
+  const [h1, m1] = hhmm(debut).split(":").map(Number);
+  const [h2, m2] = hhmm(fin).split(":").map(Number);
+  if ([h1, m1, h2, m2].some(x => !Number.isFinite(x))) return 0;
+  let mins = (h2 * 60 + m2) - (h1 * 60 + m1);
+  if (mins <= 0) mins += 24 * 60;   // veillée à cheval sur minuit
+  return mins / 60;
+}
+
+function renderHeures() {
+  const host = $("#heureLog");
+  if (!host) return;
+  const list = ETAT.priere_heures;
+
+  const total = list.reduce((s, x) => s + (Number(x.heures) || 0), 0);
+  const moisCle = moisCourant();
+  const mois = list.filter(x => (x.date_priere || "").slice(0, 7) === moisCle)
+    .reduce((s, x) => s + (Number(x.heures) || 0), 0);
+
+  $("#kpiHeures").textContent = fmtH(total);
+  $("#kpiHeuresSub").textContent = list.length ? `sur ${list.length} enregistrement${list.length > 1 ? "s" : ""}` : "aucune encore";
+  $("#kpiHeuresMois").textContent = fmtH(mois);
+  $("#kpiHeuresMoisSub").textContent = "cumulées ce mois-ci";
+  $("#heuresCount").textContent = total ? `${fmtH(total)} h au total` : "";
+
+  /* Réservé aux administrateurs : créer/ajouter/réinitialiser. Les autres
+     voient les objectifs et la progression, sans les commandes. */
+  const admin = suisAdmin();
+  ["#objForm", "#heureForm", "#heureSubhead", ".heure-actions"].forEach(s => {
+    const n = $(s); if (n) n.style.display = admin ? "" : "none";
+  });
+
+  const heuresDe = oid => list.filter(x => x.objectif_id === oid).reduce((s, x) => s + (Number(x.heures) || 0), 0);
+
+  /* Sélecteur d'objectif du formulaire d'ajout. */
+  const sel = $("#heureObjectif");
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = "";
+    sel.appendChild(new Option("Sans objectif", ""));
+    objsTries().forEach(o => sel.appendChild(new Option(o.nom, o.id)));
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  }
+
+  /* Liste des objectifs, chacun avec ses propres heures. */
+  const box = $("#objList");
+  if (box) {
+    box.innerHTML = "";
+    const objs = objsTries();
+    if (!objs.length) {
+      box.appendChild(el("div", "obj-empty", admin
+        ? "Aucun objectif pour l'instant. Créez-en un ci-dessus (nom + heures visées)."
+        : "Aucun objectif pour l'instant."));
+    } else {
+      objs.forEach(o => box.appendChild(objItem(o, heuresDe(o.id))));
+    }
+    const orphelines = list.filter(x => !x.objectif_id).reduce((s, x) => s + (Number(x.heures) || 0), 0);
+    if (orphelines > 0) box.appendChild(el("div", "obj-empty", `${fmtH(orphelines)} h enregistrées sans objectif.`));
+  }
+
+  host.innerHTML = "";   // journal détaillé masqué
+}
+
+const objsTries = () => ETAT.objectifs.slice().sort((a, b) =>
+  (a.cree_le || "").localeCompare(b.cree_le || "") || (a.nom || "").localeCompare(b.nom || "", "fr"));
+
+function objItem(o, heures) {
+  const cible = Number(o.cible) || 0;
+  const pct = cible > 0 ? Math.min(100, heures / cible * 100) : 0;
+  const atteint = cible > 0 && heures >= cible;
+  const it = el("div", "obj-item" + (atteint ? " obj-reached" : ""));
+
+  const top = el("div", "obj-top");
+  top.appendChild(el("span", "obj-nom", o.nom));
+  const val = el("span", "obj-val");
+  val.innerHTML = cible > 0
+    ? `<b>${fmtH(heures)}</b> / ${fmtH(cible)} h · ${Math.round(pct)} %` + (atteint ? " 🎉" : "")
+    : `<b>${fmtH(heures)}</b> h`;
+  top.appendChild(val);
+  it.appendChild(top);
+
+  if (cible > 0) {
+    const bar = el("div", "goal-bar");
+    const fill = el("i"); fill.style.width = pct + "%";
+    bar.appendChild(fill);
+    it.appendChild(bar);
+  }
+
+  if (suisAdmin()) {
+    const act = el("div", "obj-act");
+    const bReset = el("button", "btn sm ghost", "⟲ heures");
+    bReset.type = "button"; bReset.title = "Remettre à zéro les heures de cet objectif";
+    bReset.addEventListener("click", () => resetHeuresObjectif(o));
+    act.appendChild(bReset);
+    const bDel = el("button", "btn sm ghost", "✕ objectif");
+    bDel.type = "button"; bDel.title = "Supprimer l'objectif";
+    bDel.addEventListener("click", () => supprimerObjectif(o));
+    act.appendChild(bDel);
+    it.appendChild(act);
+  }
+  return it;
+}
+
+async function resetHeuresObjectif(o) {
+  const ids = ETAT.priere_heures.filter(x => x.objectif_id === o.id).map(x => x.id);
+  if (!ids.length) { alert("Aucune heure enregistrée pour cet objectif."); return; }
+  if (!confirm(`Remettre à zéro les heures de « ${o.nom} » ?`)) return;
+  const { error } = await sb.from("priere_heures").delete().in("id", ids);
+  if (error) { alert("Réinitialisation refusée : " + error.message); return; }
+  await chargerOptionnel("priere_heures", "objectifs.sql");
+  renderHeures();
+}
+
+async function supprimerObjectif(o) {
+  if (!confirm(`Supprimer l'objectif « ${o.nom} » ?\n\nLes heures déjà comptées resteront dans le total (sans objectif).`)) return;
+  const { error } = await sb.from("objectifs").delete().eq("id", o.id);
+  if (error) { alert("Suppression refusée : " + error.message); return; }
+  await chargerOptionnel("objectifs", "objectifs.sql");
+  await chargerOptionnel("priere_heures", "objectifs.sql");
+  renderHeures();
+}
+
+/* ======================= Évangélisation ======================= */
+function moisCourant() { return new Date().toISOString().slice(0, 7); }
+const MOIS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+
+function renderEvangelisation() {
+  const host = $("#sortieList");
+  if (!host) return;
+  const list = ETAT.sorties.slice().sort((a, b) =>
+    (b.date_sortie || "").localeCompare(a.date_sortie || "") ||
+    (b.cree_le || "").localeCompare(a.cree_le || ""));
+
+  const nb = list.length;
+  const contacts = list.reduce((s, x) => s + (x.contacts || 0), 0);
+  const decisions = list.reduce((s, x) => s + (x.decisions || 0), 0);
+  const moisCle = moisCourant();
+  const ceMois = list.filter(x => (x.date_sortie || "").slice(0, 7) === moisCle);
+  const contactsMois = ceMois.reduce((s, x) => s + (x.contacts || 0), 0);
+
+  $("#kpiSorties").textContent = nb;
+  $("#kpiSortiesSub").textContent = nb ? `sur ${new Set(list.map(x => x.ville)).size} ville${new Set(list.map(x => x.ville)).size > 1 ? "s" : ""}` : "aucune enregistrée";
+  $("#kpiContacts").textContent = contacts;
+  $("#kpiContactsSub").textContent = nb ? `soit ${(contacts / nb).toFixed(1)} par sortie` : "—";
+  $("#kpiDecisions").textContent = decisions;
+  $("#kpiDecisionsSub").textContent = decisions ? "personnes ayant décidé" : "à célébrer bientôt";
+  $("#kpiSortiesMois").textContent = ceMois.length;
+  $("#kpiSortiesMoisSub").textContent = ceMois.length ? `${contactsMois} personne${contactsMois > 1 ? "s" : ""} rencontrée${contactsMois > 1 ? "s" : ""}` : "ce mois-ci";
+
+  $("#sortieCount").textContent = nb ? `${nb} sortie${nb > 1 ? "s" : ""}` : "";
   host.innerHTML = "";
-  const items = [];
-  ETAT.membres.forEach(m => prieresEnCours(m.id).forEach(p => items.push({ m, p })));
-  items.sort((a, b) => (b.p.confie_le || "").localeCompare(a.p.confie_le || ""));
-
-  const exauces = ETAT.prieres.filter(p => p.exauce).length;
-  $("#prayCount").textContent = items.length
-    ? `${items.length} en cours · ${exauces} exaucé${exauces > 1 ? "s" : ""}` : "";
-
-  if (!items.length) {
-    host.appendChild(el("div", "pray-empty", "Aucun sujet de prière en cours. Ouvrez une fiche pour en ajouter un."));
+  if (!nb) {
+    host.appendChild(el("div", "empty", "Aucune sortie enregistrée. Cliquez « Nouvelle sortie » pour ouvrir le journal."));
     return;
   }
-  items.forEach(({ m, p }) => {
-    const row = el("button", "pray-row");
-    row.type = "button";
-    row.appendChild(el("span", "dotb"));
-    const b = el("div", null);
-    b.style.minWidth = "0";
-    b.appendChild(el("div", "pray-text", p.texte));
-    b.appendChild(el("div", "pr-who", `${fullName(m)} · ${m.ville} · depuis le ${fmtDate(p.confie_le)}`));
-    row.appendChild(b);
-    row.addEventListener("click", () => openMember(m.id));
-    host.appendChild(row);
-  });
+  list.forEach(s => host.appendChild(sortieCard(s)));
+}
+
+function sortieCard(s) {
+  const card = el("div", "sortie" + (s.note ? " has-note" : ""));
+  const d = new Date((s.date_sortie || todayISO()) + "T00:00:00");
+  const dt = el("div", "sortie-date");
+  dt.appendChild(el("div", "d", isNaN(d) ? "—" : String(d.getDate())));
+  dt.appendChild(el("div", "m", isNaN(d) ? "" : MOIS[d.getMonth()]));
+  card.appendChild(dt);
+
+  const main = el("div", "sortie-main");
+  main.appendChild(el("div", "s-ville", s.ville));
+  main.appendChild(el("div", "s-lieu", [s.lieu, `ajouté par ${s.ajoute_par}`].filter(Boolean).join(" · ")));
+  card.appendChild(main);
+
+  const stats = el("div", "sortie-stats");
+  const mk = (val, lab) => { const w = el("div", "s-stat"); w.appendChild(el("b", null, String(val || 0))); w.appendChild(el("span", null, lab)); return w; };
+  stats.appendChild(mk(s.equipe, "équipe"));
+  stats.appendChild(mk(s.contacts, "rencontres"));
+  if (s.decisions) stats.appendChild(mk(s.decisions, "décisions"));
+  card.appendChild(stats);
+
+  if (s.note) card.appendChild(el("div", "sortie-note", s.note));
+
+  if (suisAdmin() || s.ajoute_par_id === (moi && moi.id)) {
+    const del = el("div", "sortie-del");
+    const b = el("button", "btn sm ghost", "Supprimer");
+    b.type = "button";
+    b.addEventListener("click", async () => {
+      if (!confirm(`Supprimer la sortie du ${fmtDate(s.date_sortie)} à ${s.ville} ?`)) return;
+      b.disabled = true;
+      const { error } = await sb.from("sorties").delete().eq("id", s.id);
+      b.disabled = false;
+      if (error) { alert("Suppression refusée : " + error.message); return; }
+      await majTable("sorties");
+    });
+    del.appendChild(b);
+    card.appendChild(del);
+  }
+  return card;
+}
+
+/* ======================= Retraites ======================= */
+function renderRetraites() {
+  const avenirHost = $("#retraitePasse") ? $("#retraiteAvenir") : null;
+  if (!avenirHost) return;
+  const passeHost = $("#retraitePasse");
+  const today = todayISO();
+
+  const list = ETAT.retraites.slice();
+  const finDe = r => r.date_fin || r.date_debut;
+  const avenir = list.filter(r => finDe(r) >= today)
+    .sort((a, b) => (a.date_debut || "").localeCompare(b.date_debut || ""));
+  const passe = list.filter(r => finDe(r) < today)
+    .sort((a, b) => (b.date_debut || "").localeCompare(a.date_debut || ""));
+
+  /* --- Indicateurs --- */
+  $("#kpiRetraites").textContent = list.length;
+  $("#kpiRetraitesSub").textContent = list.length
+    ? `${avenir.length} à venir · ${passe.length} passée${passe.length > 1 ? "s" : ""}` : "aucune enregistrée";
+
+  const proch = avenir[0];
+  if (proch) {
+    $("#kpiProchaine").textContent = fmtDateCourt(proch.date_debut);
+    $("#kpiProchaineSub").textContent = `${proch.titre}${proch.lieu ? " · " + proch.lieu : ""}`;
+  } else {
+    $("#kpiProchaine").textContent = "—";
+    $("#kpiProchaineSub").textContent = "à planifier";
+  }
+
+  const cumul = list.reduce((s, r) => s + (r.participants || 0), 0);
+  const conv = list.reduce((s, r) => s + (r.conversions || 0), 0);
+  const bapt = list.reduce((s, r) => s + (r.baptemes || 0), 0);
+  $("#kpiParticipants").textContent = cumul;
+  $("#kpiParticipantsSub").textContent = (conv || bapt)
+    ? `${conv} conversion${conv > 1 ? "s" : ""} · ${bapt} baptême${bapt > 1 ? "s" : ""}`
+    : (list.length ? "toutes retraites confondues" : "—");
+
+  /* --- À venir --- */
+  const panel = $("#retraitesAvenirPanel");
+  panel.hidden = avenir.length === 0;
+  $("#retraiteAvenirCount").textContent = avenir.length ? `${avenir.length}` : "";
+  avenirHost.innerHTML = "";
+  avenir.forEach(r => avenirHost.appendChild(retraiteCard(r, true)));
+
+  /* --- Passées --- */
+  $("#retraitePasseCount").textContent = passe.length ? `${passe.length}` : "";
+  passeHost.innerHTML = "";
+  if (!passe.length && !avenir.length) {
+    passeHost.appendChild(el("div", "empty", "Aucune retraite enregistrée. Cliquez « Nouvelle retraite » pour en planifier une."));
+  } else if (!passe.length) {
+    passeHost.appendChild(el("div", "empty", "Aucune retraite passée pour l'instant."));
+  } else {
+    passe.forEach(r => passeHost.appendChild(retraiteCard(r, false)));
+  }
+}
+
+function fmtDateCourt(iso) {
+  iso = jour(iso);
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("fr-FR", { day:"numeric", month:"short" });
+}
+
+function retraiteCard(r, avenir) {
+  const card = el("div", "retraite " + (avenir ? "r-avenir" : "r-passee"));
+  const top = el("div", "retraite-top");
+
+  const d = new Date((r.date_debut || todayISO()) + "T00:00:00");
+  const when = el("div", "retraite-when");
+  when.appendChild(el("div", "d", isNaN(d) ? "—" : String(d.getDate())));
+  when.appendChild(el("div", "m", isNaN(d) ? "" : MOIS[d.getMonth()]));
+  when.appendChild(el("div", "y", isNaN(d) ? "" : String(d.getFullYear())));
+  top.appendChild(when);
+
+  const main = el("div", "retraite-main");
+  main.appendChild(el("div", "r-titre", r.titre || "Retraite"));
+  const periode = r.date_fin && r.date_fin !== r.date_debut
+    ? `Du ${fmtDate(r.date_debut)} au ${fmtDate(r.date_fin)}`
+    : fmtDate(r.date_debut);
+  main.appendChild(el("div", "r-meta", [periode, r.lieu].filter(Boolean).join(" · ")));
+  top.appendChild(main);
+
+  top.appendChild(el("span", "retraite-tag" + (avenir ? "" : " past"), avenir ? "À venir" : "Passée"));
+  card.appendChild(top);
+
+  const stats = [
+    ["participants", r.participants], ["invités", r.invites],
+    ["conversions", r.conversions], ["baptêmes", r.baptemes]
+  ].filter(([, v]) => Number(v) > 0);
+
+  const hasBody = r.theme || r.note || stats.length || suisAdmin() || r.ajoute_par_id === (moi && moi.id);
+  if (hasBody) {
+    const body = el("div", "retraite-body");
+    if (r.theme) {
+      const t = el("div", "r-theme");
+      t.innerHTML = `<b>Thème :</b> ${escapeHtml(r.theme)}`;
+      body.appendChild(t);
+    }
+    if (r.note) body.appendChild(el("div", "r-note", r.note));
+
+    if (stats.length) {
+      const row = el("div", "retraite-stats");
+      stats.forEach(([lab, v]) => {
+        const s = el("div", "s-stat");
+        s.appendChild(el("b", null, String(v)));
+        s.appendChild(el("span", null, lab));
+        row.appendChild(s);
+      });
+      body.appendChild(row);
+    }
+
+    const photos = Array.isArray(r.images) ? r.images : [];
+    if (photos.length) {
+      const gal = el("div", "retraite-photos");
+      photos.forEach(url => {
+        const a = el("a", "rp");
+        a.href = url; a.target = "_blank"; a.rel = "noopener";
+        const img = el("img");
+        img.src = url; img.loading = "lazy"; img.alt = "Photo de la retraite";
+        a.appendChild(img);
+        gal.appendChild(a);
+      });
+      body.appendChild(gal);
+    }
+
+    const foot = el("div", "retraite-foot");
+    foot.appendChild(el("span", "r-part", `ajouté par ${r.ajoute_par}`));
+
+    if (suisAdmin() || r.ajoute_par_id === (moi && moi.id)) {
+      const act = el("div", "sortie-del");
+      const mod = el("button", "btn sm ghost", "Modifier");
+      mod.type = "button";
+      mod.addEventListener("click", () => openRetraite(r));
+      act.appendChild(mod);
+
+      const b = el("button", "btn sm ghost", "Supprimer");
+      b.type = "button";
+      b.addEventListener("click", async () => {
+        if (!confirm(`Supprimer la retraite « ${r.titre} » ?`)) return;
+        b.disabled = true;
+        const { error } = await sb.from("retraites").delete().eq("id", r.id);
+        b.disabled = false;
+        if (error) { alert("Suppression refusée : " + error.message); return; }
+        await majTable("retraites");
+      });
+      act.appendChild(b);
+      foot.appendChild(act);
+    }
+    body.appendChild(foot);
+    card.appendChild(body);
+  }
+  return card;
 }
 
 /* ======================= Graphe ======================= */
-function renderBars() {
-  const host = $("#bars");
-  host.innerHTML = "";
-  const cs = citiesSorted();
-  const max = Math.max(1, ...cs.map(c => c.total));
+/* Menu déroulant « Membres par ville » : remplit la liste et l'encart d'info. */
+function renderVilleSelect() {
+  const sel = $("#villeSelect");
+  if (!sel) return;
+  const cur = filters.ville;
+  sel.innerHTML = "";
+  sel.appendChild(new Option("Toutes les villes", ""));
+  citiesSorted().forEach(c => sel.appendChild(new Option(`${c.nom} (${c.fiches})`, c.nom)));
+  sel.value = cur;
+  renderVilleInfo();
+}
+function renderVilleInfo() {
+  const info = $("#villeInfo");
+  if (!info) return;
+  info.innerHTML = "";
+  const nom = filters.ville;
 
-  cs.forEach(c => {
-    const row = el("div", "bar-row" + (hi === c.nom ? " on" : ""));
-    row.dataset.ville = c.nom;
-    row.appendChild(el("div", "bar-label", c.nom));
+  if (!nom) {
+    const cs = citiesSorted();
+    const villes = cs.filter(c => c.fiches > 0).length;
+    const wrap = el("div", null);
+    wrap.style.display = "flex"; wrap.style.alignItems = "baseline"; wrap.style.gap = "10px";
+    wrap.appendChild(el("span", "vi-num", String(ETAT.membres.length)));
+    wrap.appendChild(el("span", "vi-lab", `membre${ETAT.membres.length > 1 ? "s" : ""} au total · ${villes} ville${villes > 1 ? "s" : ""} active${villes > 1 ? "s" : ""}`));
+    info.appendChild(wrap);
+    return;
+  }
 
-    const track = el("div", "bar-track");
-    const wTot = c.total / max * 100, wFill = c.fiches / max * 100;
-    if (c.fiches < c.total) {
-      const rest = el("div", "bar-seg rest");
-      rest.style.left  = `calc(${wFill}% + ${c.fiches > 0 ? 2 : 0}px)`;
-      rest.style.width = `calc(${wTot - wFill}% - ${c.fiches > 0 ? 2 : 0}px)`;
-      track.appendChild(rest);
-    }
-    if (c.fiches > 0) {
-      const fill = el("div", "bar-seg filled");
-      fill.style.width = wFill + "%";
-      if (c.fiches >= c.total) fill.style.borderRadius = "0 4px 4px 0";
-      track.appendChild(fill);
-    }
-    row.appendChild(track);
+  const c = citiesSorted().find(x => x.nom === nom);
+  if (!c) { info.appendChild(el("span", "vi-empty", "Ville inconnue.")); return; }
 
-    const val = el("div", "bar-val");
-    val.innerHTML = c.effectif ? `<b>${c.fiches}</b>/${c.total}` : `<b>${c.fiches}</b>`;
-    row.appendChild(val);
+  const bloc = el("div", null);
+  bloc.style.display = "flex"; bloc.style.alignItems = "baseline"; bloc.style.gap = "10px";
+  bloc.appendChild(el("span", "vi-num", String(c.fiches)));
+  const lab = el("span", "vi-lab");
+  lab.innerHTML = `enregistré${c.fiches > 1 ? "s" : ""}` + (c.effectif ? ` sur <b>${c.total}</b> recensés` : "");
+  bloc.appendChild(lab);
+  info.appendChild(bloc);
 
-    row.addEventListener("mouseenter", e => {
-      hi = c.nom; paintHighlight();
-      const k = countByStatut(membresDe(c.nom));
-      showTip(e, c.nom, [["Enregistrés", c.fiches], ["Effectif recensé", c.effectif || "—"],
-        ...STATUTS.filter(s => k[s.nom]).map(s => [s.nom, k[s.nom]])]);
-    });
-    row.addEventListener("mousemove", moveTip);
-    row.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
-    row.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
-    host.appendChild(row);
+  const k = countByStatut(membresDe(nom));
+  const chips = el("div", "vi-stat");
+  STATUTS.filter(s => k[s.nom]).forEach(s => {
+    const ch = el("span", "vi-chip");
+    const dot = el("i"); dot.style.background = s.couleur;
+    ch.appendChild(dot);
+    ch.appendChild(document.createTextNode(`${k[s.nom]} ${s.nom.toLowerCase()}`));
+    chips.appendChild(ch);
   });
+  if (chips.children.length) info.appendChild(chips);
 }
 function paintHighlight() {
   document.querySelectorAll(".bar-row, .bubble").forEach(n => n.classList.toggle("on", n.dataset.ville === hi));
@@ -1061,8 +2327,15 @@ const FR = [
   [7.00,47.50],[7.58,47.59],[7.62,48.30],[8.23,48.97],[7.10,49.15],[6.35,49.47],[5.80,49.55],
   [4.87,49.80],[4.23,50.28],[3.66,50.34],[3.15,50.79],[2.55,51.09]
 ];
+const SVGNS = "http://www.w3.org/2000/svg";
+const mkSvg = (t, a) => { const n = document.createElementNS(SVGNS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+
 function renderMap() {
-  const svg = $("#mapSvg");
+  renderMapInto($("#mapSvg"));
+  renderMapInto($("#mapSvgEff"));
+}
+function renderMapInto(svg) {
+  if (!svg) return;
   const W = 400, H = 400, PAD = 16;
   const K = Math.cos(46.5 * Math.PI / 180);
   const lons = FR.map(p => p[0]), lats = FR.map(p => p[1]);
@@ -1074,8 +2347,7 @@ function renderMap() {
   const py = lat => (y1 - lat) * s + oy;
 
   svg.innerHTML = "";
-  const NS = "http://www.w3.org/2000/svg";
-  const mk = (t, a) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+  const mk = mkSvg;
   svg.appendChild(mk("path", { class:"fr-outline", d: FR.map((p, i) => (i ? "L" : "M") + px(p[0]).toFixed(1) + " " + py(p[1]).toFixed(1)).join(" ") + " Z" }));
 
   const cs = citiesSorted().filter(c => typeof c.lat === "number" && typeof c.lon === "number");
@@ -1092,7 +2364,7 @@ function renderMap() {
     });
     b.addEventListener("mousemove", moveTip);
     b.addEventListener("mouseleave", () => { hi = null; paintHighlight(); hideTip(); });
-    b.addEventListener("click", () => { filters.ville = c.nom; syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
+    b.addEventListener("click", () => { filters.ville = c.nom; allerVers("effectifs"); syncControls(); renderList(); $("#list").scrollIntoView({ behavior:"smooth", block:"start" }); });
     svg.appendChild(b);
     if (c.fiches >= 4) {
       const t = mk("text", { class:"bubble-label", x:(cx + r + 3).toFixed(1), y:(cy + 3).toFixed(1) });
@@ -1100,6 +2372,122 @@ function renderMap() {
       svg.appendChild(t);
     }
   });
+}
+
+/* ======================= Graphiques par année ======================= */
+/* Regroupe les membres par année de rencontre (repli sur la date de création). */
+function membresParAnnee() {
+  const an = m => {
+    const d = jour(m.date_rencontre) || jour(m.cree_le);
+    const y = parseInt((d || "").slice(0, 4), 10);
+    return Number.isFinite(y) ? y : null;
+  };
+  const map = new Map();
+  ETAT.membres.forEach(m => { const y = an(m); if (y) map.set(y, (map.get(y) || 0) + 1); });
+  if (!map.size) return [];
+  const min = Math.min(...map.keys()), max = Math.max(...map.keys());
+  const out = [];
+  for (let y = min; y <= max; y++) out.push({ annee: y, nb: map.get(y) || 0 });
+  return out;
+}
+
+function renderEvolution() {
+  const svg = $("#evoSvg");
+  if (!svg) return;
+  const data = membresParAnnee();
+  let cum = 0;
+  const pts = data.map(d => ({ annee: d.annee, val: (cum += d.nb) }));
+  const W = 460, H = 240, L = 38, R = 14, T = 16, B = 30;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  if (pts.length < 2) {
+    svg.appendChild(mkSvg("text", { class:"ch-empty", x: W / 2, y: H / 2, "text-anchor":"middle" })).textContent =
+      pts.length ? "Une seule année de données pour l'instant." : "Pas encore de données datées.";
+    return;
+  }
+  const maxV = Math.max(1, ...pts.map(p => p.val));
+  const x = i => L + (W - L - R) * (pts.length === 1 ? 0 : i / (pts.length - 1));
+  const y = v => T + (H - T - B) * (1 - v / maxV);
+
+  /* Grille + graduations Y */
+  const ticks = niceTicks(maxV, 4);
+  ticks.forEach(t => {
+    svg.appendChild(mkSvg("line", { class:"ch-grid", x1:L, y1:y(t), x2:W - R, y2:y(t) }));
+    const lab = mkSvg("text", { class:"ch-tick val", x:L - 6, y:y(t) + 3, "text-anchor":"end" });
+    lab.textContent = t; svg.appendChild(lab);
+  });
+  /* Graduations X (années) */
+  pts.forEach((p, i) => {
+    if (pts.length > 8 && i % 2 && i !== pts.length - 1) return;
+    const lab = mkSvg("text", { class:"ch-tick", x:x(i), y:H - 10, "text-anchor":"middle" });
+    lab.textContent = p.annee; svg.appendChild(lab);
+  });
+
+  const line = pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.val).toFixed(1)).join(" ");
+  svg.appendChild(mkSvg("path", { class:"ch-area", d: line + ` L${x(pts.length - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z` }));
+  svg.appendChild(mkSvg("path", { class:"ch-line", d: line }));
+
+  pts.forEach((p, i) => {
+    const dot = mkSvg("circle", { class:"ch-dot", cx:x(i).toFixed(1), cy:y(p.val).toFixed(1), r:4 });
+    dot.addEventListener("mouseenter", e => showTip(e, String(p.annee),
+      [["Membres cumulés", p.val], ["Nouveaux cette année", data[i].nb]]));
+    dot.addEventListener("mousemove", moveTip);
+    dot.addEventListener("mouseleave", hideTip);
+    svg.appendChild(dot);
+  });
+}
+
+function renderNouveauxAnnee() {
+  const svg = $("#yearSvg");
+  if (!svg) return;
+  const data = membresParAnnee();
+  const W = 460, H = 240, L = 34, R = 14, T = 16, B = 30;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  if (!data.length) {
+    svg.appendChild(mkSvg("text", { class:"ch-empty", x: W / 2, y: H / 2, "text-anchor":"middle" })).textContent =
+      "Pas encore de données datées.";
+    return;
+  }
+  const maxV = Math.max(1, ...data.map(d => d.nb));
+  const plotW = W - L - R, plotH = H - T - B, n = data.length;
+  const band = plotW / n, bw = Math.min(46, band * 0.62);
+
+  const ticks = niceTicks(maxV, 4);
+  ticks.forEach(t => {
+    svg.appendChild(mkSvg("line", { class:"ch-grid", x1:L, y1:T + plotH * (1 - t / maxV), x2:W - R, y2:T + plotH * (1 - t / maxV) }));
+    const lab = mkSvg("text", { class:"ch-tick val", x:L - 6, y:T + plotH * (1 - t / maxV) + 3, "text-anchor":"end" });
+    lab.textContent = t; svg.appendChild(lab);
+  });
+
+  data.forEach((d, i) => {
+    const cx = L + band * (i + 0.5);
+    const h = plotH * (d.nb / maxV);
+    if (d.nb > 0) {
+      /* extrémité haute arrondie (4px), ancrée à la ligne de base */
+      const bx = cx - bw / 2, by = T + plotH - h, rad = Math.min(4, bw / 2, h);
+      const bar = mkSvg("path", { class:"ch-bar", d:
+        `M${bx} ${T + plotH} V${by + rad} Q${bx} ${by} ${bx + rad} ${by} H${bx + bw - rad} Q${bx + bw} ${by} ${bx + bw} ${by + rad} V${T + plotH} Z` });
+      bar.addEventListener("mouseenter", e => showTip(e, String(d.annee), [["Nouveaux membres", d.nb]]));
+      bar.addEventListener("mousemove", moveTip);
+      bar.addEventListener("mouseleave", hideTip);
+      svg.appendChild(bar);
+    }
+    if (n <= 8 || !(i % 2) || i === n - 1) {
+      const lab = mkSvg("text", { class:"ch-tick", x:cx, y:H - 10, "text-anchor":"middle" });
+      lab.textContent = d.annee; svg.appendChild(lab);
+    }
+  });
+}
+
+/* Graduations « rondes » pour l'axe des valeurs. */
+function niceTicks(max, count) {
+  const raw = max / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || mag;
+  const out = [];
+  for (let v = 0; v <= max + 0.001; v += step) out.push(Math.round(v));
+  return out;
 }
 
 /* ======================= Liste ======================= */
@@ -1318,6 +2706,7 @@ $("#cForm").addEventListener("submit", async e => {
   if (error) return alert("Impossible de publier : " + error.message);
   $("#cText").value = "";
   $("#cText").style.height = "auto";
+  await majTable("commentaires");
 });
 $("#cText").addEventListener("input", e => {
   e.target.style.height = "auto";
@@ -1390,9 +2779,370 @@ $("#addForm").addEventListener("submit", async e => {
     });
   }
   closeModal();
+  allerVers("effectifs");
   filters.q = ""; filters.statut = ""; filters.ville = ville;
+  await majTable("membres");
+  if (p1) await majTable("prieres");
   syncControls();
   openMember(data.id);
+});
+
+/* ======================= Ajout d'une sortie ======================= */
+function openSortie() {
+  const sel = $("#sortieVille");
+  sel.innerHTML = "";
+  citiesSorted().forEach(c => sel.appendChild(new Option(c.nom, c.nom)));
+  sel.appendChild(new Option("+ Nouvelle ville…", "__new"));
+  $("#wrapSortieVille").style.display = "none";
+  $("#sortieForm").querySelector('[name="date"]').value = todayISO();
+  $("#sortieErr").textContent = "";
+  $("#sortieModal").classList.add("show");
+  $("#scrim").classList.add("show");
+  setTimeout(() => sel.focus(), 60);
+}
+function closeSortie() {
+  $("#sortieModal").classList.remove("show");
+  $("#sortieForm").reset();
+  if (!$("#drawer").classList.contains("show") && !$("#modal").classList.contains("show") && !$("#dataModal").classList.contains("show")) $("#scrim").classList.remove("show");
+}
+$("#sortieVille").addEventListener("change", e => {
+  $("#wrapSortieVille").style.display = e.target.value === "__new" ? "" : "none";
+});
+$("#btnAddSortie").addEventListener("click", openSortie);
+$("#sortieCancel").addEventListener("click", closeSortie);
+
+$("#sortieForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const g = k => (f.get(k) || "").toString().trim();
+  const n = k => Math.max(0, parseInt(g(k), 10) || 0);
+  const err = $("#sortieErr");
+  err.textContent = "";
+
+  let ville = g("ville");
+  if (ville === "__new") {
+    ville = g("nouvelleVille");
+    if (!ville) { err.textContent = "Indiquez le nom de la nouvelle ville."; return; }
+  }
+  if (!ville) { err.textContent = "Choisissez une ville."; return; }
+
+  const btn = $("#sortieGo");
+  btn.disabled = true; btn.textContent = "Enregistrement…";
+
+  if (!ETAT.villes.some(v => v.nom === ville)) {
+    await sb.from("villes").insert({ nom: ville, effectif: 0 });   // échoue sans droit admin : sans gravité
+  }
+
+  const { error } = await sb.from("sorties").insert({
+    date_sortie: g("date") || todayISO(),
+    ville, lieu: g("lieu"),
+    equipe: n("equipe"), contacts: n("contacts"), decisions: n("decisions"),
+    note: g("note"),
+    ajoute_par: moi.nom, ajoute_par_id: moi.id
+  });
+
+  btn.disabled = false; btn.textContent = "Enregistrer";
+  if (error) { err.textContent = "Enregistrement refusé : " + error.message; return; }
+  closeSortie();
+  await majTable("sorties");
+});
+
+/* ======================= Ajout / modification d'une retraite ======================= */
+let editRetraiteId = null;   // null = création ; sinon id de la retraite modifiée
+let editImages = [];         // photos conservées pendant l'édition
+
+function openRetraite(r) {
+  const form = $("#retraiteForm");
+  form.reset();
+  editRetraiteId = r ? r.id : null;
+  editImages = (r && Array.isArray(r.images)) ? [...r.images] : [];
+
+  $("#retraiteTitle").textContent = r ? "Modifier la retraite" : "Enregistrer une retraite";
+  $("#retraiteGo").textContent = r ? "Enregistrer les modifications" : "Enregistrer";
+
+  if (r) {
+    form.titre.value = r.titre || "";
+    form.debut.value = jour(r.date_debut) || "";
+    form.fin.value = r.date_fin ? jour(r.date_fin) : "";
+    form.lieu.value = r.lieu || "";
+    form.participants.value = r.participants || "";
+    form.invites.value = r.invites || "";
+    form.conversions.value = r.conversions || "";
+    form.baptemes.value = r.baptemes || "";
+    form.theme.value = r.theme || "";
+    form.note.value = r.note || "";
+  } else {
+    form.debut.value = todayISO();
+  }
+  renderEditImages();
+
+  $("#retraiteErr").textContent = "";
+  $("#retraiteModal").classList.add("show");
+  $("#scrim").classList.add("show");
+  setTimeout(() => form.querySelector('[name="titre"]').focus(), 60);
+}
+
+function renderEditImages() {
+  const wrap = $("#retraiteImagesWrap"), box = $("#retraiteImagesActuelles");
+  if (!box) return;
+  box.innerHTML = "";
+  editImages.forEach((url, idx) => {
+    const w = el("div", "edit-photo");
+    const img = el("img"); img.src = url; img.loading = "lazy"; img.alt = "Photo";
+    w.appendChild(img);
+    const rm = el("button", "edit-photo-rm", "✕");
+    rm.type = "button"; rm.title = "Retirer cette photo";
+    rm.addEventListener("click", () => { editImages.splice(idx, 1); renderEditImages(); });
+    w.appendChild(rm);
+    box.appendChild(w);
+  });
+  wrap.hidden = editImages.length === 0;
+}
+
+function closeRetraite() {
+  $("#retraiteModal").classList.remove("show");
+  $("#retraiteForm").reset();
+  editRetraiteId = null; editImages = [];
+  if (!$("#drawer").classList.contains("show") && !$("#modal").classList.contains("show")
+      && !$("#dataModal").classList.contains("show") && !$("#sortieModal").classList.contains("show")) {
+    $("#scrim").classList.remove("show");
+  }
+}
+$("#btnAddRetraite").addEventListener("click", () => openRetraite());
+$("#retraiteCancel").addEventListener("click", closeRetraite);
+
+$("#retraiteForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const g = k => (f.get(k) || "").toString().trim();
+  const num = k => Math.max(0, parseInt(g(k), 10) || 0);
+  const err = $("#retraiteErr");
+  err.textContent = "";
+
+  const titre = g("titre");
+  const debut = g("debut");
+  if (!titre) { err.textContent = "Donnez un titre à la retraite."; return; }
+  if (!debut) { err.textContent = "Indiquez la date de début."; return; }
+  const fin = g("fin");
+  if (fin && fin < debut) { err.textContent = "La date de fin doit suivre la date de début."; return; }
+
+  const btn = $("#retraiteGo");
+  btn.disabled = true; btn.textContent = "Enregistrement…";
+
+  /* --- Téléversement des photos vers Supabase Storage --- */
+  let images = [];
+  const fichiers = $("#retraiteImages") ? [...$("#retraiteImages").files] : [];
+  if (fichiers.length) {
+    btn.textContent = "Envoi des photos…";
+    try {
+      for (const file of fichiers) {
+        if (!file.type.startsWith("image/")) continue;
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const chemin = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await sb.storage.from("retraites").upload(chemin, file, { cacheControl: "3600", upsert: false });
+        if (upErr) throw upErr;
+        const { data } = sb.storage.from("retraites").getPublicUrl(chemin);
+        if (data && data.publicUrl) images.push(data.publicUrl);
+      }
+    } catch (upErr) {
+      btn.disabled = false; btn.textContent = "Enregistrer";
+      const bucketManquant = /bucket|not found|does not exist|violates row-level/i.test(upErr.message || "");
+      err.innerHTML = bucketManquant
+        ? "L'espace de stockage des photos n'est pas prêt. Exécutez le script <b>supabase/retraite_photos.sql</b> dans Supabase, puis réessayez."
+        : "Envoi des photos impossible : " + escapeHtml(upErr.message || String(upErr));
+      return;
+    }
+  }
+
+  btn.textContent = "Enregistrement…";
+  const champs = {
+    titre, lieu: g("lieu"),
+    date_debut: debut, date_fin: fin || null,
+    participants: num("participants"), theme: g("theme"), note: g("note"),
+    invites: num("invites"), conversions: num("conversions"), baptemes: num("baptemes"),
+    images: editRetraiteId ? [...editImages, ...images] : images
+  };
+
+  let error;
+  if (editRetraiteId) {
+    ({ error } = await sb.from("retraites").update(champs).eq("id", editRetraiteId));
+  } else {
+    ({ error } = await sb.from("retraites").insert({ ...champs, ajoute_par: moi.nom, ajoute_par_id: moi.id }));
+  }
+
+  /* Repli : si les nouvelles colonnes n'existent pas encore en base. */
+  if (error && /invites|conversions|baptemes|images|schema cache|PGRST204/i.test(`${error.message} ${error.code || ""}`)) {
+    const base = { titre, lieu: g("lieu"), date_debut: debut, date_fin: fin || null,
+      participants: num("participants"), theme: g("theme"), note: g("note") };
+    if (editRetraiteId) ({ error } = await sb.from("retraites").update(base).eq("id", editRetraiteId));
+    else ({ error } = await sb.from("retraites").insert({ ...base, ajoute_par: moi.nom, ajoute_par_id: moi.id }));
+    if (!error) toast("Enregistré. Exécutez <b>retraites.sql</b> et <b>retraite_photos.sql</b> pour mémoriser chiffres & photos.");
+  }
+
+  btn.disabled = false; btn.textContent = editRetraiteId ? "Enregistrer les modifications" : "Enregistrer";
+  if (error) { err.textContent = "Enregistrement refusé : " + error.message; return; }
+  closeRetraite();
+  await majTable("retraites");
+});
+
+/* ======================= Sujet de prière (page Prier) ======================= */
+$("#prForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#prErr");
+  err.textContent = "";
+  const texte = $("#prTexte").value.trim();
+  if (!texte) return;
+
+  /* Lien facultatif vers une personne, par correspondance de nom. */
+  const nomLie = $("#prMembre").value.trim();
+  let membre_id = null;
+  if (nomLie) {
+    const m = ETAT.membres.find(x => norm(fullName(x)) === norm(nomLie));
+    if (!m) { err.textContent = "Personne introuvable. Laissez le champ vide pour un sujet d'équipe."; return; }
+    membre_id = m.id;
+  }
+
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  const { error } = await sb.from("prieres").insert({
+    membre_id, texte, auteur: moi.nom, auteur_id: moi.id, confie_le: todayISO()
+  });
+  btn.disabled = false;
+  if (error) { err.textContent = "Ajout refusé : " + error.message; return; }
+  $("#prTexte").value = ""; $("#prMembre").value = "";
+  await majTable("prieres");
+});
+
+/* ======================= Heures de prière ======================= */
+/* Deux façons d'ajouter : un nombre direct, ou un créneau début → fin. */
+function majDureeLive() {
+  const d = $("#heureDebut").value, f = $("#heureFin").value, live = $("#heureLive");
+  if (d && f) {
+    const h = dureeHeures(d, f);
+    live.textContent = h > 0 ? `Créneau = ${fmtH(h)} h` + (hhmm(f) <= hhmm(d) ? " (passe minuit)" : "") : "";
+  } else live.textContent = "";
+}
+$("#heureDebut").addEventListener("input", majDureeLive);
+$("#heureFin").addEventListener("input", majDureeLive);
+
+$("#heureForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#heureErr");
+  err.textContent = "";
+
+  /* Priorité au nombre saisi ; sinon on calcule depuis le créneau début/fin. */
+  let h = parseFloat(($("#heureNb").value || "").replace(",", "."));
+  const debut = $("#heureDebut").value, fin = $("#heureFin").value;
+  if (!(Number.isFinite(h) && h > 0) && debut && fin) {
+    if (hhmm(debut) === hhmm(fin)) { err.textContent = "Le début et la fin sont identiques."; return; }
+    h = dureeHeures(debut, fin);
+  }
+  if (!Number.isFinite(h) || h <= 0) {
+    err.textContent = "Indiquez un nombre d'heures, ou une heure de début et de fin.";
+    return;
+  }
+
+  const objectif_id = ($("#heureObjectif") && $("#heureObjectif").value) || null;
+  const payload = {
+    heures: Math.round(h * 100) / 100,
+    date_priere: todayISO(),
+    auteur: moi.nom, auteur_id: moi.id
+  };
+  if (objectif_id) payload.objectif_id = objectif_id;
+
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  let { error } = await sb.from("priere_heures").insert(payload);
+
+  /* Repli : si la colonne objectif_id n'existe pas encore (migration
+     objectifs.sql pas lancée), on enregistre l'heure sans le lien. */
+  if (error && /objectif_id|schema cache|PGRST204/i.test(`${error.message} ${error.code || ""}`)) {
+    delete payload.objectif_id;
+    ({ error } = await sb.from("priere_heures").insert(payload));
+    if (!error) toast("Heure ajoutée. Exécutez <b>supabase/objectifs.sql</b> pour la rattacher à un objectif.");
+  }
+
+  btn.disabled = false;
+  if (error) {
+    const tableManquante = /priere_heures.*(does not exist|schema cache)|PGRST205/i.test(`${error.message} ${error.code || ""}`);
+    if (tableManquante) {
+      err.innerHTML = "La table des heures n'existe pas encore. Exécutez <b>supabase/priere.sql</b> dans Supabase (SQL&nbsp;Editor), puis réessayez.";
+    } else {
+      err.textContent = "Enregistrement refusé : " + error.message;
+    }
+    return;
+  }
+  $("#heureNb").value = ""; $("#heureDebut").value = ""; $("#heureFin").value = ""; $("#heureLive").textContent = "";
+  await chargerOptionnel("priere_heures", "priere.sql");
+  renderHeures();
+});
+
+/* ======================= Créer un objectif ======================= */
+$("#objForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#objErr");
+  err.textContent = "";
+  const nom = $("#objNom").value.trim();
+  if (!nom) { err.textContent = "Donnez un nom à l'objectif."; return; }
+  const cibleRaw = ($("#objCible").value || "").replace(",", ".");
+  const cible = cibleRaw ? Math.max(0, parseFloat(cibleRaw)) : null;
+
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  const { error } = await sb.from("objectifs").insert({
+    nom, cible, cree_par: moi.nom, cree_par_id: moi.id
+  });
+  btn.disabled = false;
+  if (error) {
+    const manque = /objectifs.*(does not exist|schema cache)|PGRST205/i.test(`${error.message} ${error.code || ""}`);
+    if (manque) {
+      err.innerHTML = "La table des objectifs n'existe pas encore. Exécutez <b>supabase/objectifs.sql</b> dans Supabase (SQL&nbsp;Editor), puis réessayez.";
+    } else {
+      err.textContent = "Création refusée : " + error.message;
+    }
+    return;
+  }
+  $("#objNom").value = ""; $("#objCible").value = "";
+  await chargerOptionnel("objectifs", "objectifs.sql");
+  renderHeures();
+});
+
+/* Réinitialise le total des heures (supprime les enregistrements autorisés). */
+$("#btnResetHeures").addEventListener("click", async () => {
+  if (!ETAT.priere_heures.length) { alert("Il n'y a aucune heure à réinitialiser."); return; }
+  if (!confirm("Remettre le total des heures de prière à zéro ?\n\nCela supprime les enregistrements (tous objectifs confondus). Action irréversible.")) return;
+  const btn = $("#btnResetHeures");
+  btn.disabled = true;
+  const ids = ETAT.priere_heures.map(h => h.id);
+  const { error } = await sb.from("priere_heures").delete().in("id", ids);
+  btn.disabled = false;
+  if (error) { alert("Réinitialisation refusée : " + error.message); return; }
+  await chargerOptionnel("priere_heures", "priere.sql");
+  renderHeures();
+  if (ETAT.priere_heures.length) {
+    toast("Vos heures ont été réinitialisées. Des heures ajoutées par d'autres membres restent.");
+  }
+});
+
+/* ======================= Navigation entre les pages ======================= */
+const VUES = ["accueil", "effectifs", "prier", "evangelisation", "retraites"];
+function allerVers(vue) {
+  if (!VUES.includes(vue)) vue = "accueil";
+  vueActive = vue;
+  document.querySelectorAll(".view").forEach(v =>
+    v.hidden = v.id !== "view" + vue.charAt(0).toUpperCase() + vue.slice(1));
+  document.querySelectorAll("#mainnav .navlink").forEach(b =>
+    b.classList.toggle("on", b.dataset.view === vue));
+  try { location.hash = vue; } catch (e) {}
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$("#mainnav").addEventListener("click", e => {
+  const b = e.target.closest(".navlink");
+  if (b) allerVers(b.dataset.view);
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-goto]");
+  if (b) allerVers(b.dataset.goto);
 });
 
 /* ======================= Données / rôles ======================= */
@@ -1514,18 +3264,26 @@ function syncControls() {
   sel.value = cur;
   $("#fStatut").value = filters.statut;
   $("#q").value = filters.q;
+  const vs = $("#villeSelect");
+  if (vs) { vs.value = cur; renderVilleInfo(); }
 }
 $("#q").addEventListener("input", e => { filters.q = e.target.value; renderList(); });
-$("#fVille").addEventListener("change", e => { filters.ville = e.target.value; renderList(); });
+$("#fVille").addEventListener("change", e => { filters.ville = e.target.value; syncControls(); renderList(); });
 $("#fStatut").addEventListener("change", e => { filters.statut = e.target.value; renderStatuts(); renderList(); });
+$("#villeSelect").addEventListener("change", e => {
+  filters.ville = e.target.value;
+  syncControls(); renderList();
+  if (filters.ville) $("#list").scrollIntoView({ behavior:"smooth", block:"start" });
+});
 
 $("#btnAdd").addEventListener("click", openModal);
+$("#btnAdd2").addEventListener("click", openModal);
 $("#addCancel").addEventListener("click", closeModal);
 $("#dClose").addEventListener("click", closeDrawer);
 $("#btnMenu").addEventListener("click", openData);
 $("#dataClose").addEventListener("click", closeData);
-$("#scrim").addEventListener("click", () => { closeDrawer(); closeModal(); closeData(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closeDrawer(); closeModal(); closeData(); } });
+$("#scrim").addEventListener("click", () => { closeDrawer(); closeModal(); closeData(); closeSortie(); closeRetraite(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeDrawer(); closeModal(); closeData(); closeSortie(); closeRetraite(); } });
 
 $("#btnTheme").addEventListener("click", () => {
   const dark = matchMedia("(prefers-color-scheme: dark)").matches;
@@ -1547,7 +3305,9 @@ addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(renderMap, 
 /* ======================= Rendu global ======================= */
 let pendingRender = null;
 function renderAll() {
-  renderKPI(); renderStatuts(); renderPrieres(); renderBars(); renderMap(); renderList(); buildWho();
+  renderHero(); renderGallery(); renderEnLigne(); renderKPI(); renderStatuts(); renderPrieres(); renderVilleSelect();
+  renderEvolution(); renderNouveauxAnnee(); renderMap(); renderList();
+  renderEvangelisation(); renderRetraites(); renderHeures(); buildWho();
   if (openId) {
     const encore = ETAT.membres.some(m => m.id === openId);
     if (encore && $("#drawer").classList.contains("show")) openMember(openId);
@@ -1558,6 +3318,21 @@ function renderAll() {
 function planifierRendu() {
   clearTimeout(pendingRender);
   pendingRender = setTimeout(renderAll, 60);
+}
+
+/* Recharge une table puis redessine, sans dépendre du temps réel : garantit
+   que l'écran de celui qui vient d'ajouter/modifier se met à jour aussitôt. */
+async function majTable(table) {
+  try {
+    const base = ["villes", "membres", "commentaires", "prieres", "profils"];
+    if (base.includes(table)) {
+      const { data } = await sb.from(table).select("*");
+      if (data) ETAT[table] = data;
+    } else {
+      await chargerOptionnel(table, table + ".sql");
+    }
+  } catch (e) { console.warn("majTable", table, e); }
+  renderAll();
 }
 
 /* ======================= Authentification ======================= */
@@ -1670,7 +3445,29 @@ async function chargerTout() {
   ETAT.membres = m.data || [];
   ETAT.commentaires = c.data || [];
   ETAT.prieres = p.data || [];
+
+  /* Sorties et retraites sont chargées à part : si l'une de ces tables
+     n'existe pas encore (migration non exécutée), l'application reste
+     utilisable, la page concernée s'affiche simplement vide. */
+  await chargerOptionnel("sorties",       "sorties.sql");
+  await chargerOptionnel("retraites",     "retraites.sql");
+  await chargerOptionnel("priere_heures", "priere.sql");
+  await chargerOptionnel("parametres",    "priere.sql");
+  await chargerOptionnel("objectifs",     "objectifs.sql");
+
   await chargerProfils();
+}
+
+async function chargerOptionnel(table, fichier) {
+  try {
+    const r = await avecDelai(sb.from(table).select("*"), 10, `Chargement des ${table}`);
+    if (r.error) throw new Error(r.error.message);
+    ETAT[table] = r.data || [];
+  } catch (e) {
+    ETAT[table] = [];
+    console.warn(`Table « ${table} » indisponible :`, e.message,
+      `\n→ Exécutez supabase/${fichier} dans l'éditeur SQL de Supabase.`);
+  }
 }
 
 /* ======================= Temps réel ======================= */
@@ -1700,6 +3497,12 @@ function annoncer(table, ev) {
   } else if (table === "commentaires") {
     const m = ETAT.membres.find(x => x.id === ev.new.membre_id);
     toast(`<b>${escapeHtml(ev.new.auteur)}</b> a commenté${m ? " la fiche de <b>" + escapeHtml(fullName(m)) + "</b>" : ""}.`);
+  } else if (table === "sorties") {
+    toast(`<b>${escapeHtml(ev.new.ajoute_par)}</b> a enregistré une sortie à <b>${escapeHtml(ev.new.ville)}</b>.`);
+  } else if (table === "retraites") {
+    toast(`<b>${escapeHtml(ev.new.ajoute_par)}</b> a ajouté la retraite <b>${escapeHtml(ev.new.titre)}</b>.`);
+  } else if (table === "priere_heures") {
+    toast(`<b>${escapeHtml(ev.new.auteur)}</b> a prié <b>${escapeHtml(String(ev.new.heures))} h</b>.`);
   }
 }
 
@@ -1713,7 +3516,7 @@ let canal = null;
 function ecouter() {
   if (canal) sb.removeChannel(canal);
   canal = sb.channel("teams-mbock");
-  ["membres", "commentaires", "prieres", "profils"].forEach(table => {
+  ["membres", "commentaires", "prieres", "profils", "sorties", "retraites", "priere_heures", "parametres", "objectifs"].forEach(table => {
     canal.on("postgres_changes", { event: "*", schema: "public", table }, ev => {
       appliquer(table, ev);
       annoncer(table, ev);
@@ -1829,10 +3632,14 @@ async function appliquerSession(sessionAuth) {
       majRole();
       syncControls();
       renderAll();
+      allerVers((location.hash || "").replace("#", "") || "accueil");
       ecouter();
+      ecouterPresence();
     } else {
       moi = null;
       if (canal) { sb.removeChannel(canal); canal = null; }
+      if (canalPresence) { sb.removeChannel(canalPresence); canalPresence = null; }
+      enLigne = [];
       afficherApp(false);
       showTab("login");
     }

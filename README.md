@@ -7,18 +7,41 @@ d'évangélisation, en France.
 
 ## Ce que fait le tableau de bord
 
-- **Membres par ville** — les 22 villes de l'équipe, avec leurs effectifs et
-  leurs coordonnées réelles, en graphique et sur une carte de France.
-- **Suivi par étape** — chaque personne est *Nouveau*, *En intégration*,
-  *Membre* ou *À relancer* ; la répartition est cliquable pour filtrer.
-- **Ajout de membres** — n'importe quel membre connecté peut enregistrer une
-  personne rencontrée en sortie. L'ajout est signé automatiquement.
-- **Sujets de prière** — chaque personne confie ses sujets ; ils se marquent
-  *exaucés*. Un panneau rassemble tous les sujets en cours, toutes villes
-  confondues : c'est la vue à projeter en réunion de prière.
-- **Commentaires** — un fil de suivi par personne.
-- **Export** — sauvegarde JSON complète ou CSV pour Excel, réservé aux
-  administrateurs.
+L'application est organisée en **cinq pages**, accessibles par le menu en
+haut de l'écran :
+
+- **Accueil** — page de présentation : bandeau avec compteurs animés, texte
+  « Qui sommes-nous », galerie de photos de l'équipe, et la liste des
+  **membres connectés en ce moment** (présence en temps réel).
+- **Effectifs** — les 22 villes de l'équipe avec leurs effectifs réels, en
+  graphique ; une **courbe d'évolution** (membres cumulés par année) et un
+  **histogramme des nouveaux membres par année** ; une **carte de répartition**
+  en France ; enfin la liste des membres ville par ville, avec recherche et
+  filtres. Chaque personne est *Nouveau*, *En intégration*, *Membre* ou
+  *À relancer*. N'importe quel membre connecté peut enregistrer une personne.
+- **Prier** — on y **ajoute un sujet de prière** directement (pour l'équipe,
+  ou lié à une personne), on le marque *exaucé*, et on **enregistre des heures
+  de prière** en saisissant l'**heure de début et de fin** (la durée se calcule
+  seule, veillées à cheval sur minuit comprises). Le total se cumule pour toute
+  l'équipe, avec un **objectif d'heures** (défini par un administrateur) et une
+  barre de progression. Sujets en cours, sujets exaucés et journal des heures :
+  la vue à projeter en réunion de prière.
+- **Évangélisation** — le journal des sorties : date, ville, lieu, nombre
+  d'évangélistes, personnes rencontrées et décisions, avec un compte-rendu
+  facultatif. Des indicateurs résument l'activité (total, ce mois-ci…).
+- **Retraites** — les temps de ressourcement de l'équipe, séparés en
+  *à venir* et *passées* : titre, dates, lieu, participants, thème et
+  programme. La prochaine retraite est mise en avant.
+
+Le reste est transversal : **commentaires** (un fil de suivi par personne) et
+**export** JSON complet ou CSV pour Excel, réservé aux administrateurs.
+
+### Photos de l'équipe
+
+La galerie de la page d'accueil affiche des emplacements de démonstration
+tant qu'aucune photo n'est fournie. Pour vos vraies photos : placez-les dans
+un dossier `images/` à côté de `index.html`, puis renseignez la liste
+`PHOTOS` en haut du script (`{ src: "images/…jpg", cap: "légende" }`).
 
 ## Accès
 
@@ -59,7 +82,9 @@ est configuré pour que les exports n'y arrivent jamais par inadvertance.
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | L'application entière — HTML, CSS et JavaScript, sans aucune dépendance externe. |
-
-Pour l'utiliser hors ligne, il suffit de télécharger `index.html` et de
-l'ouvrir dans un navigateur.
+| `index.html` | L'application entière — HTML, CSS et JavaScript. |
+| `supabase/schema.sql` | Le schéma de la base partagée, à exécuter une fois. |
+| `supabase/sorties.sql` | Ajoute la table des sorties d'évangélisation. À exécuter dans l'éditeur SQL de Supabase pour activer la page **Évangélisation** (tant qu'elle n'est pas exécutée, la page s'affiche vide sans bloquer le reste). |
+| `supabase/retraites.sql` | Ajoute la table des retraites d'équipe. À exécuter de la même façon pour activer la page **Retraites**. |
+| `supabase/priere.sql` | Rend les sujets de prière détachables d'une personne (sujets d'équipe) et ajoute la table des **heures de prière**. À exécuter pour activer ces fonctions de la page **Prier**. |
+| `supabase/objectifs.sql` | Ajoute la table des **objectifs** d'heures (plusieurs, nommés) et relie chaque heure à un objectif. À exécuter pour activer les objectifs de la page **Prier**. |
