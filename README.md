@@ -88,3 +88,4 @@ est configuré pour que les exports n'y arrivent jamais par inadvertance.
 | `supabase/retraites.sql` | Ajoute la table des retraites d'équipe. À exécuter de la même façon pour activer la page **Retraites**. |
 | `supabase/priere.sql` | Rend les sujets de prière détachables d'une personne (sujets d'équipe) et ajoute la table des **heures de prière**. À exécuter pour activer ces fonctions de la page **Prier**. |
 | `supabase/objectifs.sql` | Ajoute la table des **objectifs** d'heures (plusieurs, nommés) et relie chaque heure à un objectif. À exécuter pour activer les objectifs de la page **Prier**. |
+| `supabase/reinit_mdp.sql` | Permet à l'administrateur principal de **donner un nouveau mot de passe** à un membre depuis le site (bouton « Mot de passe » du panneau Administrateurs), sans e-mail. |

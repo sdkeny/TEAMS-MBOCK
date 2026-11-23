@@ -148,6 +148,7 @@ header.top {
 .adm-row:first-child { border-top:0; }
 .adm-name { font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .adm-row .btn { margin-left:auto; }
+.adm-row .btn + .btn { margin-left:6px; }
 .adm-empty { padding:14px 2px; font-size:12.5px; color:var(--muted); }
 .adm-you { font-size:12px; color:var(--muted); margin-left:auto; }
 .adm-add { display:flex; gap:8px; margin-top:12px; }
@@ -3262,8 +3263,46 @@ function renderAdmins() {
       });
       row.appendChild(b);
     }
+    if (!sup) row.appendChild(boutonReinitMdp(p));
     host.appendChild(row);
   });
+}
+
+/* Réinitialise le mot de passe d'un membre sans e-mail (fonction SQL
+   admin_reinit_mdp, voir supabase/reinit_mdp.sql). */
+function mdpProvisoire() {
+  const lettres = "abcdefghjkmnpqrstuvwxyz", chiffres = "23456789";
+  const tire = s => s[crypto.getRandomValues(new Uint32Array(1))[0] % s.length];
+  let m = "Mbock";
+  for (let i = 0; i < 3; i++) m += tire(lettres);
+  for (let i = 0; i < 3; i++) m += tire(chiffres);
+  return m;
+}
+
+function boutonReinitMdp(p) {
+  const b = el("button", "btn sm ghost", "Mot de passe");
+  b.type = "button";
+  b.title = `Donner un nouveau mot de passe à ${p.nom}`;
+  b.addEventListener("click", async () => {
+    const nouveau = prompt(
+      `Nouveau mot de passe pour ${p.nom}.\n\n` +
+      `Un mot de passe provisoire est proposé ; vous pouvez le modifier ` +
+      `(8 caractères minimum, lettres et chiffres). Notez-le pour le lui transmettre.`,
+      mdpProvisoire());
+    if (nouveau == null) return;
+    const r = reglesMdp(nouveau);
+    if (!r.len || !r.mix) return alert("Le mot de passe doit faire au moins 8 caractères et mêler lettres et chiffres.");
+    b.disabled = true;
+    const { error } = await sb.rpc("admin_reinit_mdp", { cible: p.id, nouveau });
+    b.disabled = false;
+    if (error) {
+      return alert(/admin_reinit_mdp|function|schema cache/i.test(error.message)
+        ? "Fonction absente : exécutez supabase/reinit_mdp.sql dans l'éditeur SQL de Supabase, puis réessayez."
+        : "Refusé : " + error.message);
+    }
+    alert(`C'est fait. ${p.nom} peut se connecter avec :\n\n${nouveau}\n\nTransmettez-le-lui (SMS, WhatsApp…).`);
+  });
+  return b;
 }
 
 function openData() {
@@ -3406,7 +3445,8 @@ const messagesAuth = {
 };
 const traduire = msg => {
   if (/rate limit/i.test(msg || "")) return "Trop d'e-mails envoyés récemment par le site. Réessayez dans une heure.";
-  if (/error sending/i.test(msg || "")) return "L'e-mail n'a pas pu être envoyé (réglage SMTP de Supabase à vérifier). Prévenez un administrateur.";
+  if (/error sending/i.test(msg || "")) return "L'e-mail n'a pas pu être envoyé. Demandez à " + SUPER_ADMIN +
+    " de vous donner un nouveau mot de passe : il peut le faire depuis le site, sans e-mail.";
   return messagesAuth[msg] || msg;
 };
 
