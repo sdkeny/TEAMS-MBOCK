@@ -3404,7 +3404,10 @@ const messagesAuth = {
   "Email not confirmed": "Votre e-mail n'est pas encore confirmé. Ouvrez le message envoyé par Supabase.",
   "User already registered": "Un compte existe déjà avec cet e-mail. Utilisez l'onglet « J'ai déjà un compte »."
 };
-const traduire = msg => messagesAuth[msg] || msg;
+const traduire = msg => {
+  if (/rate limit/i.test(msg || "")) return "Trop d'e-mails envoyés récemment par le site. Réessayez dans une heure.";
+  return messagesAuth[msg] || msg;
+};
 
 $("#signupForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -3448,7 +3451,7 @@ $("#oubliForm").addEventListener("submit", async e => {
   const { error } = await sb.auth.resetPasswordForEmail(mail, { redirectTo: urlRetour() });
   btn.disabled = false; btn.textContent = "Recevoir le lien";
   if (error) {
-    err.textContent = /rate limit|seconds/i.test(error.message)
+    err.textContent = /seconds/i.test(error.message) && !/rate limit/i.test(error.message)
       ? "Trop de demandes rapprochées. Patientez une minute avant de réessayer."
       : traduire(error.message);
     return;
