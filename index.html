@@ -3406,6 +3406,7 @@ const messagesAuth = {
 };
 const traduire = msg => {
   if (/rate limit/i.test(msg || "")) return "Trop d'e-mails envoyés récemment par le site. Réessayez dans une heure.";
+  if (/error sending/i.test(msg || "")) return "L'e-mail n'a pas pu être envoyé (réglage SMTP de Supabase à vérifier). Prévenez un administrateur.";
   return messagesAuth[msg] || msg;
 };
 
