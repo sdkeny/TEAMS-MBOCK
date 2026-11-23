@@ -3592,6 +3592,22 @@ async function demarrer() {
     return;
   }
 
+  /* Vérifie d'abord que le projet Supabase existe encore : un projet gratuit
+     mis en pause (inactivité) disparaît du DNS et toute requête échoue. */
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    await fetch(SUPABASE_URL + "/auth/v1/health", { headers: { apikey: SUPABASE_KEY }, signal: ctrl.signal });
+    clearTimeout(t);
+  } catch (e) {
+    panne("Base de données indisponible",
+      "Le serveur Supabase de l'équipe ne répond pas. Le plus souvent, le projet a été " +
+      "<b>mis en pause</b> par Supabase après une période d'inactivité. Un administrateur doit " +
+      "le réactiver sur <a href=\"https://supabase.com/dashboard\" target=\"_blank\" rel=\"noopener\">supabase.com/dashboard</a> " +
+      "(bouton « Restore project »), puis recharger cette page.", true);
+    return;
+  }
+
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   /* ATTENTION — supabase-js détient un verrou pendant l'exécution de ce
