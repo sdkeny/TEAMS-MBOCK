@@ -186,9 +186,13 @@ header.top {
 
 .lock-form { display:grid; gap:13px; }
 /* display:grid l'emporterait sur le [hidden] du navigateur */
-.lock-form[hidden], .lock-note[hidden], .lock-none[hidden] { display:none; }
+.lock-form[hidden], .lock-note[hidden], .lock-none[hidden], .tabs[hidden] { display:none; }
 .lock-go { width:100%; justify-content:center; padding:11px; margin-top:3px; }
 .lock-go[disabled] { opacity:.5; cursor:progress; }
+.lock-link { background:none; border:0; padding:4px; font:inherit; font-size:13px; color:var(--muted); cursor:pointer; justify-self:center; text-decoration:underline; text-underline-offset:3px; }
+.lock-link:hover { color:var(--ink); }
+.lock-intro { margin:0; font-size:13px; color:var(--muted); line-height:1.5; }
+.lock-intro b { color:var(--ink); }
 .lock-none { font-size:12.5px; color:var(--muted); margin:0; text-align:center; }
 
 .rules { list-style:none; margin:2px 0 0; padding:0; display:grid; gap:6px; }
@@ -913,6 +917,33 @@ header.top {
       </label>
       <div class="err" id="loginErr"></div>
       <button class="btn primary lock-go" type="submit" id="loginGo">Entrer</button>
+      <button class="lock-link" type="button" id="lienOubli">Mot de passe oublié ?</button>
+    </form>
+
+    <form id="oubliForm" class="lock-form" hidden>
+      <p class="lock-intro">Indiquez l'adresse e-mail de votre compte : vous recevrez un lien pour choisir un nouveau mot de passe.</p>
+      <label class="inp"><span>Adresse e-mail</span>
+        <input id="oubliMail" type="email" autocomplete="email" placeholder="vous@exemple.com" required>
+      </label>
+      <div class="err" id="oubliErr"></div>
+      <button class="btn primary lock-go" type="submit" id="oubliGo">Recevoir le lien</button>
+      <button class="lock-link" type="button" id="lienRetour">← Retour à la connexion</button>
+    </form>
+
+    <form id="resetForm" class="lock-form" hidden>
+      <p class="lock-intro"><b>Choisissez un nouveau mot de passe.</b></p>
+      <label class="inp"><span>Nouveau mot de passe</span>
+        <input id="resetPwd" type="password" autocomplete="new-password" required>
+      </label>
+      <label class="inp"><span>Confirmez-le</span>
+        <input id="resetPwd2" type="password" autocomplete="new-password" required>
+      </label>
+      <ul class="rules" id="resetRules">
+        <li data-rule="len"><i></i>Au moins 8 caractères</li>
+        <li data-rule="mix"><i></i>Mélange lettres et chiffres</li>
+      </ul>
+      <div class="err" id="resetErr"></div>
+      <button class="btn primary lock-go" type="submit" id="resetGo">Enregistrer et entrer</button>
     </form>
 
     <form id="signupForm" class="lock-form" hidden>
@@ -3336,18 +3367,24 @@ async function majTable(table) {
 }
 
 /* ======================= Authentification ======================= */
+/* which : "login" | "signup" | "oubli" (demande de lien) | "reset" (nouveau mot de passe) */
 function showTab(which) {
-  const login = which === "login";
-  $("#tabLogin").classList.toggle("on", login);
-  $("#tabSignup").classList.toggle("on", !login);
-  $("#loginForm").hidden = !login;
-  $("#signupForm").hidden = login;
-  $("#loginErr").textContent = "";
-  $("#suErr").textContent = "";
-  setTimeout(() => $(login ? "#loginMail" : "#suNom").focus(), 40);
+  const formes = { login: "#loginForm", signup: "#signupForm", oubli: "#oubliForm", reset: "#resetForm" };
+  const focus  = { login: "#loginMail", signup: "#suNom", oubli: "#oubliMail", reset: "#resetPwd" };
+  Object.entries(formes).forEach(([k, sel]) => { $(sel).hidden = k !== which; });
+  $("#tabLogin").classList.toggle("on", which === "login");
+  $("#tabSignup").classList.toggle("on", which === "signup");
+  document.querySelector("#lock .tabs").hidden = which === "reset";
+  ["#loginErr", "#suErr", "#oubliErr", "#resetErr"].forEach(s => { $(s).textContent = ""; $(s).style.color = ""; });
+  setTimeout(() => $(focus[which]).focus(), 40);
 }
 $("#tabLogin").addEventListener("click", () => showTab("login"));
 $("#tabSignup").addEventListener("click", () => showTab("signup"));
+$("#lienOubli").addEventListener("click", () => {
+  showTab("oubli");
+  $("#oubliMail").value = $("#loginMail").value.trim();
+});
+$("#lienRetour").addEventListener("click", () => showTab("login"));
 
 function reglesMdp(p) {
   return { len: p.length >= 8, mix: /[a-zA-ZÀ-ÿ]/.test(p) && /[0-9]/.test(p) };
@@ -3389,12 +3426,69 @@ $("#signupForm").addEventListener("submit", async e => {
 
   if (error) { err.textContent = traduire(error.message); return; }
   if (!data.session) {
-    err.style.color = "var(--good-text)";
-    err.textContent = "Compte créé. Confirmez votre e-mail, puis connectez-vous.";
     showTab("login");
     $("#loginMail").value = mail;
-    setTimeout(() => { err.style.color = ""; }, 100);
+    $("#loginErr").style.color = "var(--good-text)";
+    $("#loginErr").textContent = "Compte créé. Confirmez votre e-mail, puis connectez-vous.";
   }
+});
+
+/* ======================= Mot de passe oublié ======================= */
+/* Adresse de retour du lien envoyé par e-mail : la page actuelle, sans ancre.
+   Elle doit figurer dans Supabase → Authentication → URL Configuration. */
+const urlRetour = () => location.origin + location.pathname;
+
+$("#oubliForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#oubliErr");
+  err.textContent = ""; err.style.color = "";
+  const mail = $("#oubliMail").value.trim();
+  const btn = $("#oubliGo");
+  btn.disabled = true; btn.textContent = "Envoi…";
+  const { error } = await sb.auth.resetPasswordForEmail(mail, { redirectTo: urlRetour() });
+  btn.disabled = false; btn.textContent = "Recevoir le lien";
+  if (error) {
+    err.textContent = /rate limit|seconds/i.test(error.message)
+      ? "Trop de demandes rapprochées. Patientez une minute avant de réessayer."
+      : traduire(error.message);
+    return;
+  }
+  /* Même message que le compte existe ou non : on ne révèle pas qui est inscrit. */
+  err.style.color = "var(--good-text)";
+  err.textContent = "Si un compte existe pour cette adresse, un e-mail vient d'être envoyé. " +
+    "Ouvrez le lien qu'il contient (pensez à regarder dans les indésirables).";
+});
+
+$("#resetPwd").addEventListener("input", () => {
+  const r = reglesMdp($("#resetPwd").value);
+  document.querySelectorAll("#resetRules li").forEach(li => li.classList.toggle("ok", !!r[li.dataset.rule]));
+});
+
+$("#resetForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#resetErr");
+  err.textContent = "";
+  const pwd = $("#resetPwd").value;
+  const r = reglesMdp(pwd);
+  if (!r.len) { err.textContent = "Le mot de passe doit faire au moins 8 caractères."; return; }
+  if (!r.mix) { err.textContent = "Mélangez lettres et chiffres."; return; }
+  if (pwd !== $("#resetPwd2").value) { err.textContent = "Les deux mots de passe ne correspondent pas."; return; }
+
+  const btn = $("#resetGo");
+  btn.disabled = true; btn.textContent = "Enregistrement…";
+  const { error } = await sb.auth.updateUser({ password: pwd });
+  btn.disabled = false; btn.textContent = "Enregistrer et entrer";
+  if (error) {
+    err.textContent = /different from the old/i.test(error.message)
+      ? "Choisissez un mot de passe différent de l'ancien."
+      : traduire(error.message);
+    return;
+  }
+  modeRecup = false;
+  $("#resetPwd").value = $("#resetPwd2").value = "";
+  toast("Mot de passe modifié.");
+  const { data } = await sb.auth.getSession();
+  appliquerSession(data.session);
 });
 
 $("#loginForm").addEventListener("submit", async e => {
@@ -3615,6 +3709,7 @@ async function demarrer() {
      même verrou : blocage définitif, écran de chargement sans fin.
      On sort donc de la pile d'appel avant de toucher à la base. */
   sb.auth.onAuthStateChange((event, sessionAuth) => {
+    if (event === "PASSWORD_RECOVERY") modeRecup = true;
     setTimeout(() => appliquerSession(sessionAuth), 0);
   });
 
@@ -3634,7 +3729,20 @@ async function demarrer() {
 let sessionTraitee = false;
 let chargementEnCours = false;
 
+/* Retour depuis le lien « mot de passe oublié » reçu par e-mail.
+   Lu avant que supabase-js n'efface l'ancre de l'adresse. */
+const ancreAuth = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+let modeRecup = ancreAuth.get("type") === "recovery";
+let erreurLien = ancreAuth.get("error_code") || ancreAuth.get("error") || "";
+if (erreurLien) history.replaceState(null, "", location.pathname + location.search);
+
 async function appliquerSession(sessionAuth) {
+  if (sessionAuth && sessionAuth.user && modeRecup) {
+    sessionTraitee = true;
+    afficherApp(false);
+    showTab("reset");
+    return;
+  }
   if (chargementEnCours) return;
   chargementEnCours = true;
   sessionTraitee = true;
@@ -3657,7 +3765,14 @@ async function appliquerSession(sessionAuth) {
       if (canalPresence) { sb.removeChannel(canalPresence); canalPresence = null; }
       enLigne = [];
       afficherApp(false);
-      showTab("login");
+      if (erreurLien) {
+        showTab("oubli");
+        $("#oubliErr").textContent = "Ce lien n'est plus valable (déjà utilisé ou expiré). " +
+          "Demandez-en un nouveau ci-dessous.";
+        erreurLien = "";
+      } else {
+        showTab("login");
+      }
     }
   } catch (e) {
     panne("Base inaccessible", "Détail : <code>" + escapeHtml(e.message) + "</code>", true);
